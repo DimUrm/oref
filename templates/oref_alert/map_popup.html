@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OrefAlert — Монитор тревог</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#0a1018;color:#e8edf2;font-family:'Segoe UI',sans-serif}
+
+/* ══════════ РЕЖИМ ОЖИДАНИЯ ══════════ */
+#standby{
+  position:absolute;inset:0;z-index:10;
+  background:linear-gradient(160deg,#0a1018 0%,#0f1923 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+  transition:opacity .6s ease;
+}
+#standby.hidden{opacity:0;pointer-events:none}
+
+.standby-flag{font-size:5rem;line-height:1;animation:flag-float 3s ease-in-out infinite}
+@keyframes flag-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
+.standby-status{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(68,255,136,.1);border:1px solid rgba(68,255,136,.3);
+  border-radius:24px;padding:8px 20px;
+}
+.standby-dot{width:10px;height:10px;border-radius:50%;background:#44ff88;animation:dot-pulse 2s ease-in-out infinite}
+@keyframes dot-pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(68,255,136,.4)}50%{opacity:.7;box-shadow:0 0 0 6px rgba(68,255,136,0)}}
+.standby-ok{font-size:1.1rem;font-weight:700;color:#44ff88;letter-spacing:.05em}
+
+.standby-clock{font-size:3.5rem;font-weight:300;color:#8fafc7;letter-spacing:.1em;font-variant-numeric:tabular-nums}
+.standby-date{font-size:.9rem;color:#4a6a8a;letter-spacing:.08em}
+
+.standby-history{
+  max-width:500px;text-align:center;font-size:.8rem;color:#4a6a8a;
+  border-top:1px solid rgba(255,255,255,.05);padding-top:16px;
+  direction:rtl;line-height:1.6;
+}
+.standby-history b{color:#2a9df4}
+
+/* ══════════ РЕЖИМ ТРЕВОГИ ══════════ */
+#alert-screen{
+  position:absolute;inset:0;z-index:20;
+  display:flex;flex-direction:column;
+  opacity:0;pointer-events:none;transition:opacity .4s ease;
+}
+#alert-screen.show{opacity:1;pointer-events:all}
+
+/* Топ-бар */
+.al-header{
+  flex-shrink:0;
+  background:linear-gradient(90deg,#1a0000,#2a0505);
+  border-bottom:3px solid #ff3333;
+  padding:10px 16px;
+  display:flex;align-items:center;gap:12px;
+  animation:hdr-blink 1.4s ease-in-out infinite;
+}
+@keyframes hdr-blink{0%,100%{border-color:#ff3333}50%{border-color:#ff8800}}
+.al-header.pre{background:linear-gradient(90deg,#1a1000,#2a1a00);border-color:#ffaa44;animation:none}
+.al-header.ok{background:linear-gradient(90deg,#001a06,#002a0a);border-color:#44ff88;animation:none}
+
+.al-siren{font-size:2.4rem;animation:siren-spin 1s linear infinite}
+@keyframes siren-spin{0%{filter:hue-rotate(0deg)}100%{filter:hue-rotate(360deg)}}
+.al-header.ok .al-siren,.al-header.pre .al-siren{animation:none}
+
+.al-htitle{
+  font-size:1.6rem;font-weight:900;letter-spacing:.06em;
+  color:#ff4444;text-transform:uppercase;
+  text-shadow:0 0 20px rgba(255,68,68,.5);
+  animation:txt-pulse 1s ease-in-out infinite;
+}
+@keyframes txt-pulse{0%,100%{opacity:1}50%{opacity:.7}}
+.al-header.ok .al-htitle{color:#44ff88;animation:none;text-shadow:none}
+.al-header.pre .al-htitle{color:#ffaa44;animation:none;text-shadow:none}
+
+.al-hinfo{flex:1;min-width:0}
+.al-hname{font-size:1rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.al-hzone{font-size:.75rem;color:#8fafc7}
+.al-img{width:52px;height:52px;object-fit:contain;background:#1e2d3d;border-radius:8px;padding:4px}
+
+/* Countdown stripe */
+.al-cd{
+  flex-shrink:0;
+  display:flex;align-items:center;gap:16px;
+  background:rgba(255,50,50,.12);
+  border-bottom:1px solid rgba(255,50,50,.25);
+  padding:8px 16px;
+}
+.al-cd.hidden{display:none}
+.al-cd-wrap{text-align:center}
+.al-cd-lbl{font-size:.6rem;color:#8fafc7;text-transform:uppercase;letter-spacing:.12em}
+.al-cd-num{font-size:2.4rem;font-weight:900;color:#ff4444;font-variant-numeric:tabular-nums;line-height:1.1}
+.al-cd-city{direction:rtl;flex:1}
+.al-cd-city-name{font-size:1rem;font-weight:700;color:#ffaa44}
+.al-cd-city-ru{font-size:.8rem;color:#8fafc7}
+.al-instr{font-size:.85rem;color:#c9a84c;margin-top:2px;
+  background:rgba(255,180,0,.07);border-left:3px solid #c9a84c;padding:4px 10px;border-radius:0 4px 4px 0}
+
+/* Карта */
+#map{flex:1;z-index:1}
+
+/* Подвал */
+.al-footer{
+  flex-shrink:0;
+  display:flex;justify-content:space-between;align-items:center;
+  background:#0a1018;border-top:1px solid rgba(255,255,255,.06);
+  padding:5px 16px;font-size:.7rem;
+}
+.al-footer-l{color:#4a90d9}
+.al-footer-r{color:#4a6a8a}
+
+/* ══════════ FLASH-ОВЕРЛЕЙ при новой тревоге ══════════ */
+#flash{
+  position:fixed;inset:0;z-index:100;
+  background:rgba(255,50,50,.7);
+  pointer-events:none;opacity:0;
+}
+#flash.on{animation:flash-anim .8s ease-out forwards}
+@keyframes flash-anim{0%{opacity:.7}100%{opacity:0}}
+</style>
+</head>
+<body>
+
+<!-- ── Вспышка при новой тревоге ── -->
+<div id="flash"></div>
+
+<!-- ══════════ РЕЖИМ ОЖИДАНИЯ ══════════ -->
+<div id="standby">
+  <div class="standby-flag">🇮🇱</div>
+  <div class="standby-clock" id="sClock">00:00:00</div>
+  <div class="standby-date"  id="sDate"></div>
+  <div class="standby-status">
+    <div class="standby-dot"></div>
+    <div class="standby-ok">Всё спокойно</div>
+  </div>
+  <div class="standby-history" id="sHistory" style="display:none">
+    <b>Последний час:</b><br><span id="sHistText"></span>
+  </div>
+</div>
+
+<!-- ══════════ ЭКРАН ТРЕВОГИ ══════════ -->
+<div id="alert-screen">
+  <div class="al-header" id="alHeader">
+    <div class="al-siren" id="alSiren">🚨</div>
+    <div>
+      <div class="al-htitle" id="alTitle">ТРЕВОГА</div>
+    </div>
+    <div class="al-hinfo">
+      <div class="al-hname" id="alName">—</div>
+      <div class="al-hzone" id="alZone"></div>
+    </div>
+    <img id="alImg" class="al-img" src="" onerror="this.style.display='none'">
+  </div>
+
+  <div class="al-cd" id="alCd">
+    <div class="al-cd-wrap">
+      <div class="al-cd-lbl">⏱ до укрытия</div>
+      <div class="al-cd-num" id="alCdNum">—</div>
+    </div>
+    <div class="al-cd-city">
+      <div class="al-cd-city-name" id="alCityName"></div>
+      <div class="al-cd-city-ru"   id="alCityRu"  style="direction:rtl"></div>
+      <div class="al-instr" id="alInstr"></div>
+    </div>
+  </div>
+
+  <div id="map"></div>
+
+  <div class="al-footer">
+    <span class="al-footer-l" id="alFooterL"></span>
+    <span class="al-footer-r" id="alFooterR"></span>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════
+// КОНФИГУРАЦИЯ
+// ══════════════════════════════════════════════════════════════════════
+var OBJ     = 'Alert';       // Имя объекта MajorDoMo
+var POLL_MS = 2000;          // Интервал опроса (мс)
+var AUTO_FULLSCREEN = true;  // Полный экран при тревоге (можно отключить)
+
+// ══════════════════════════════════════════════════════════════════════
+// КАРТА LEAFLET
+// ══════════════════════════════════════════════════════════════════════
+var map = L.map('map', {zoomControl:true, attributionControl:false});
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {maxZoom:19}).addTo(map);
+
+var polyLayer  = null;
+var mkrLayer   = null;
+var lastMapJson = '';
+
+function drawPolygon(mapDataJson) {
+  if (mapDataJson === lastMapJson) return;
+  lastMapJson = mapDataJson;
+
+  if (polyLayer) { map.removeLayer(polyLayer); polyLayer = null; }
+  if (mkrLayer)  { map.removeLayer(mkrLayer);  mkrLayer  = null; }
+  if (!mapDataJson) return;
+
+  var d;
+  try { d = JSON.parse(mapDataJson); } catch(e) { return; }
+
+  if (d.lat && d.lng) {
+    mkrLayer = L.circleMarker([d.lat, d.lng], {
+      radius:9, color:'#ff4444', fillColor:'#ff4444', fillOpacity:.9, weight:2
+    }).addTo(map);
+    mkrLayer.bindTooltip(
+      '<b>' + (d.name_ru || d.name_he || '') + '</b>'
+        + (d.zone_ru ? '<br><small>' + d.zone_ru + '</small>' : ''),
+      {permanent:false, direction:'top'}
+    );
+  }
+
+  if (d.polygon && d.polygon.length > 2) {
+    var lls = d.polygon.map(function(p){return [p[0],p[1]];});
+    polyLayer = L.polygon(lls, {
+      color:'#ff4444', fillColor:'#ff4444',
+      fillOpacity:.2, weight:2.5, dashArray:'6,4'
+    }).addTo(map);
+    map.fitBounds(polyLayer.getBounds(), {padding:[40,40], maxZoom:14});
+  } else if (d.lat && d.lng) {
+    map.setView([d.lat, d.lng], 13);
+  }
+}
+
+function resetMap() {
+  if (polyLayer) { map.removeLayer(polyLayer); polyLayer = null; }
+  if (mkrLayer)  { map.removeLayer(mkrLayer);  mkrLayer  = null; }
+  lastMapJson = '';
+  map.setView([31.5, 34.8], 8);
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ОБРАТНЫЙ ОТСЧЁТ
+// ══════════════════════════════════════════════════════════════════════
+var cdTimer = null;
+
+function startCd(shelter, alertTS) {
+  if (cdTimer) { clearInterval(cdTimer); cdTimer = null; }
+  var s = parseInt(shelter)||0;
+  var ts = parseFloat(alertTS)||0;
+  if (!s || !ts) { document.getElementById('alCd').classList.add('hidden'); return; }
+  document.getElementById('alCd').classList.remove('hidden');
+
+  function tick() {
+    var elapsed = Math.floor(Date.now()/1000) - ts;
+    var rem     = s - elapsed;
+    var el      = document.getElementById('alCdNum');
+    if (rem > 0) {
+      el.textContent = rem + ' сек';
+      el.style.color = rem <= 10 ? '#ff8800' : '#ff4444';
+    } else if (rem > -60) {
+      el.textContent = rem + ' сек';
+      el.style.color = '#666';
+    } else {
+      el.textContent = '—';
+      clearInterval(cdTimer); cdTimer = null;
+    }
+  }
+  tick();
+  cdTimer = setInterval(tick, 1000);
+}
+
+function stopCd() {
+  if (cdTimer) { clearInterval(cdTimer); cdTimer = null; }
+  document.getElementById('alCd').classList.add('hidden');
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ЧАСЫ (режим ожидания)
+// ══════════════════════════════════════════════════════════════════════
+function updateClock() {
+  var now = new Date();
+  document.getElementById('sClock').textContent =
+    ('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2)+':'+('0'+now.getSeconds()).slice(-2);
+  document.getElementById('sDate').textContent =
+    now.toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'});
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ══════════════════════════════════════════════════════════════════════
+// ПОЛНОЭКРАННЫЙ РЕЖИМ
+// ══════════════════════════════════════════════════════════════════════
+function goFullscreen() {
+  if (!AUTO_FULLSCREEN) return;
+  var el = document.documentElement;
+  if (el.requestFullscreen)      el.requestFullscreen();
+  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  else if (el.mozRequestFullScreen)    el.mozRequestFullScreen();
+}
+function exitFullscreen() {
+  if (document.fullscreenElement || document.webkitFullscreenElement) {
+    if (document.exitFullscreen)      document.exitFullscreen();
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ПЕРЕКЛЮЧЕНИЕ РЕЖИМОВ
+// ══════════════════════════════════════════════════════════════════════
+var currentMode = 'standby'; // 'standby' | 'alert' | 'pre' | 'clear'
+
+function showAlert(data) {
+  var alScreen = document.getElementById('alert-screen');
+  var standby  = document.getElementById('standby');
+  var hdr      = document.getElementById('alHeader');
+
+  if (currentMode !== 'alert') {
+    // Вспышка при новой тревоге
+    triggerFlash();
+    goFullscreen();
+    currentMode = 'alert';
+  }
+
+  standby.classList.add('hidden');
+  alScreen.classList.add('show');
+
+  var isAlert = data.status === 'Alert';
+  var isPreAl = (data.category == 14);
+
+  hdr.className = 'al-header' + (isPreAl ? ' pre' : (!isAlert ? ' ok' : ''));
+  document.getElementById('alSiren').textContent   = isAlert ? '🚨' : (isPreAl ? '⚡' : '✅');
+  document.getElementById('alTitle').textContent   = isAlert ? 'ТРЕВОГА' : (isPreAl ? 'ПРЕДУПРЕЖДЕНИЕ' : 'ОТБОЙ');
+  document.getElementById('alName').textContent    = data.name    || '—';
+  document.getElementById('alZone').textContent    = (data.cityRu && data.zoneRu)
+                                                      ? data.cityRu + ' — ' + data.zoneRu
+                                                      : (data.cityRu || data.city || '');
+  document.getElementById('alInstr').textContent   = data.instr   || '';
+  document.getElementById('alCityName').textContent= data.city    || '';
+  document.getElementById('alCityRu').textContent  = data.cityRu  || '';
+  document.getElementById('alFooterL').textContent = data.name    || '';
+  document.getElementById('alFooterR').textContent = 'Обновлено: ' + new Date().toLocaleTimeString('ru-RU');
+
+  if (data.img) {
+    var img = document.getElementById('alImg');
+    img.src = data.img; img.style.display = 'block';
+  }
+
+  if (isAlert && data.shelter && data.lastAlertTS) {
+    startCd(data.shelter, data.lastAlertTS);
+  } else {
+    stopCd();
+  }
+
+  if (data.mapData) drawPolygon(data.mapData);
+}
+
+function showPreAlert(data) {
+  data.status = 'pre_alert';
+  showAlert(data);
+}
+
+function showClear(data) {
+  if (currentMode === 'standby') return; // уже в ожидании
+  data.status = 'No Alert';
+  showAlert(data);
+  // Через 8 секунд возвращаемся в standby
+  setTimeout(function() { backToStandby(data); }, 8000);
+}
+
+function backToStandby(data) {
+  currentMode = 'standby';
+  document.getElementById('alert-screen').classList.remove('show');
+  document.getElementById('standby').classList.remove('hidden');
+  stopCd();
+  resetMap();
+  exitFullscreen();
+
+  // Показать историю за последний час
+  if (data && data.history) {
+    var el = document.getElementById('sHistText');
+    el.textContent = data.history;
+    document.getElementById('sHistory').style.display = data.history ? 'block' : 'none';
+  }
+}
+
+function triggerFlash() {
+  var fl = document.getElementById('flash');
+  fl.classList.remove('on');
+  void fl.offsetWidth;
+  fl.classList.add('on');
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ОПРОС MAJORDOMO API
+// ══════════════════════════════════════════════════════════════════════
+var lastStatus   = null;
+var lastCategory = null;
+var initialLoad  = true;
+
+function getProp(prop) {
+  return fetch('/objects/?op=get&object=' + OBJ + '&p=' + prop, {cache:'no-store'})
+    .then(function(r){ return r.text(); })
+    .then(function(v){ return v.trim(); });
+}
+
+function pollAll() {
+  var props = ['Status','Name','CityRu','ZoneRu','City','Instructions','Img',
+               'MapData','ShelterTime','LastAlertTS','Category','History'];
+  Promise.all(props.map(getProp)).then(function(v) {
+    var data = {
+      status:      v[0],
+      name:        v[1],
+      cityRu:      v[2],
+      zoneRu:      v[3],
+      city:        v[4],
+      instr:       v[5],
+      img:         v[6],
+      mapData:     v[7],
+      shelter:     v[8],
+      lastAlertTS: v[9],
+      category:    parseInt(v[10])||0,
+      history:     v[11],
+    };
+
+    var statusChanged   = (data.status   !== lastStatus);
+    var categoryChanged = (data.category !== lastCategory);
+
+    if (statusChanged || categoryChanged || initialLoad) {
+      lastStatus   = data.status;
+      lastCategory = data.category;
+      initialLoad  = false;
+
+      if (data.status === 'Alert') {
+        if (data.category === 14) {
+          showPreAlert(data);
+        } else {
+          if (currentMode !== 'alert') showAlert(data);
+          else showAlert(data); // обновляем данные
+        }
+      } else if (data.status === 'No Alert' && currentMode === 'alert') {
+        showClear(data);
+      } else if (currentMode === 'standby') {
+        // Обновляем историю
+        if (data.history) {
+          document.getElementById('sHistText').textContent = data.history;
+          document.getElementById('sHistory').style.display = 'block';
+        }
+      }
+    }
+
+    // Обновляем полигон даже без смены статуса (город мог поменяться)
+    if (data.status === 'Alert' && data.mapData && data.mapData !== lastMapJson) {
+      drawPolygon(data.mapData);
+    }
+
+  }).catch(function(e){ console.error('poll error:', e); });
+}
+
+// Быстрая проверка только Status
+function pollStatus() {
+  getProp('Status').then(function(s) {
+    if (s !== lastStatus) pollAll();
+  }).catch(function(){});
+}
+
+// Первичная загрузка — сразу все данные
+pollAll();
+setInterval(pollStatus, POLL_MS);
+
+// ══════════════════════════════════════════════════════════════════════
+// КЛИК ПО СТРАНИЦЕ — запросить fullscreen вручную (для браузеров которые
+// запрещают autoplay fullscreen без пользовательского жеста)
+// ══════════════════════════════════════════════════════════════════════
+document.body.addEventListener('click', function() {
+  if (currentMode === 'alert' && AUTO_FULLSCREEN) goFullscreen();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<?php
+/**
+ * OrefAlert — Default language file (English)
+ * @package project
+ */
+$dictionary = array(
+    'OA_STATUS_ALERT'       => 'Alert',
+    'OA_STATUS_NO_ALERT'    => 'No Alert',
+    'OA_STATUS_PRE_ALERT'   => 'Pre Alert',
+    'OA_TAB_STATUS'         => 'Status',
+    'OA_TAB_SETTINGS'       => 'Settings',
+    'OA_TAB_CATEGORIES'     => 'Categories',
+    'OA_TAB_CODE'           => 'Actions',
+    'OA_SAVE'               => 'Save',
+    'OA_SELFTEST'           => 'API Self-test',
+    'OA_IM_SAFE'            => 'I am safe',
+    'OA_IM_SAFE_BTN'        => 'Send',
+    'OA_OPEN_MAP'           => 'Open map',
+    'OA_COUNTDOWN'          => 'Time to shelter',
+    'OA_LAST_ALARM'         => 'Last alert',
+    'OA_HISTORY_LABEL'      => 'History (last hour)',
+    'OA_ALL_QUIET'          => 'All quiet',
+    'OA_CYCLE_STATUS'       => 'Cycle',
+    'OA_FILTER_WORDS'       => 'My areas (Hebrew, comma-separated)',
+    'OA_FILTER_HINT'        => 'Search in Russian, Hebrew or English. 1450 cities with shelter times.',
+    'OA_OBJECT_NAME'        => 'MajorDoMo object name',
+    'OA_OBJECT_HINT'        => 'Properties Alert.Status, .Name, .City, .MapData etc. will be set.',
+    'OA_TRIGGER_METHOD'     => 'Trigger method name',
+    'OA_TRIGGER_HINT'       => 'Called as Object.Method on every status change.',
+    'OA_POLL_INTERVAL'      => 'Poll interval (sec)',
+    'OA_POLL_HINT'          => '2/8 logic: 2 sec on data change, configured value otherwise. Always 2 during alert.',
+    'OA_HIST_INTERVAL'      => 'History update (sec)',
+    'OA_PROXY'              => 'HTTP proxy',
+    'OA_PROXY_HINT'         => 'Required if server is outside Israel.',
+    'OA_ENABLED'            => 'Module enabled',
+    'OA_NOTIFY_TG'          => 'Telegram notifications',
+    'OA_TTS'                => 'TTS voice alerts',
+    'OA_AUTO_CLOSE'         => 'Auto-clear after 10 min',
+    'OA_BUILTIN_DATA'       => 'Built-in data',
+    'OA_BUILTIN_HINT'       => 'cities.json and polygons.json are bundled in modules/oref_alert/data/. Map with polygon opens via "Open map" button.',
+    'OA_PROPS_TITLE'        => 'Object properties reference',
+    'OA_CAT_HINT'           => 'Customize Russian names, instructions and icons for each alert category.',
+    'OA_CAT_NUM'            => 'Cat.',
+    'OA_CAT_NAME'           => 'Name (Russian)',
+    'OA_CAT_ICON'           => 'Icon path',
+    'OA_CAT_INSTR'          => 'Instruction (Russian)',
+    'OA_CODE_HINT'          => 'PHP code executed after Alert.Trigger() call. Variables: $obj (object name), $city (Hebrew), $histCat (category), $cfg (config array).',
+    'OA_CODE_ALERT'         => 'On alert (status → Alert)',
+    'OA_CODE_PRE'           => 'On pre-alert (cat. 14)',
+    'OA_CODE_CLEAR'         => 'On all-clear (→ No Alert)',
+    'OA_CODE_DRILL'         => 'On drill (cat. 15+)',
+    'OA_WATCHER_TITLE'      => 'Auto-popup map setup',
+    'OA_DEBUG' => 'Debug logging (DebMes)',
+    'OA_TOTAL_ALERTS'       => 'Total alerts',
+    'OA_UPDATED'            => 'Updated',
+    'OA_HISTORY_TITLE'      => 'Event history',
+    'OA_NO_HISTORY'         => 'No events yet',
+);
+
+foreach ($dictionary as $k => $v) {
+    if (!defined('LANG_' . $k)) {
+        define('LANG_' . $k, $v);
+    }
+}

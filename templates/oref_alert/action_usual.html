@@ -1,0 +1,85 @@
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Noto+Sans+Hebrew:wght@400;700&display=swap");
+.oa-usual-widget{width:350px;background:linear-gradient(160deg,#0f1923 0%,#162030 100%);border:1px solid rgba(255,255,255,0.07);border-radius:14px;font-family:'Rajdhani',sans-serif;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.4);position:relative}
+.oa-usual-widget::before{content:'';display:block;height:3px;width:100%;background:linear-gradient(90deg,#2a9df4,#56ccf2);transition:background .6s}
+.oa-usual-widget.active::before{background:linear-gradient(90deg,#ff4444,#ff8c00);animation:oa-bar-pulse 1.2s infinite}
+@keyframes oa-bar-pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.oa-u-top{display:flex;align-items:flex-start;padding:0 16px 14px 16px}
+.oa-u-icon{flex-shrink:0;width:72px;height:72px;margin-top:10px;margin-right:14px;border-radius:50%;background:#1e2d3d;border:2px solid rgba(42,157,244,.5);overflow:hidden;transition:border-color .4s}
+.oa-usual-widget.active .oa-u-icon{border-color:rgba(255,68,68,.7);box-shadow:0 0 20px rgba(255,68,68,.3)}
+.oa-u-icon img{width:100%;height:100%;object-fit:cover}
+.oa-u-text{flex:1;padding-top:20px;min-width:0}
+.oa-u-status{font-size:.85em;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#2a9df4;margin-bottom:2px;transition:color .4s}
+.oa-usual-widget.active .oa-u-status{color:#ff6b6b}
+.oa-u-name{font-size:1.15em;font-weight:700;color:#e8edf2;line-height:1.2;margin-bottom:3px}
+.oa-u-city{font-size:.95em;color:#2a9df4;font-weight:600;direction:rtl}
+.oa-usual-widget.active .oa-u-city{color:#ffaa44}
+.oa-u-bottom{background:rgba(0,0,0,.25);border-top:1px solid rgba(255,255,255,.05);padding:10px 16px 12px}
+.oa-u-hist-label{font-size:.68em;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#4a90d9;margin-bottom:5px}
+.oa-u-track{overflow:hidden;white-space:nowrap;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:4px;padding:4px 0}
+.oa-u-marquee{display:inline-block;white-space:nowrap;color:#8fafc7;font-size:.9em;animation:oa-mq linear 20s infinite;padding-left:100%}
+@keyframes oa-mq{from{transform:translateX(0)}to{transform:translateX(-100%)}}
+.oa-u-instr{margin-top:8px;font-size:.88em;color:#c9a84c;background:rgba(255,180,0,.07);border-left:3px solid #c9a84c;padding:6px 10px;border-radius:0 4px 4px 0;font-family:'Noto Sans Hebrew','Rajdhani',sans-serif}
+.oa-usual-widget.active .oa-u-instr{color:#ff9966;background:rgba(255,100,0,.08);border-color:#ff9966}
+.oa-u-time{margin-top:7px;font-size:.78em;color:#2a9df4;text-align:right;letter-spacing:.05em}
+.oa-usual-widget.active .oa-u-time{color:#ffaa44}
+.oa-u-cd{text-align:center;padding:4px 0 8px;border-bottom:1px solid rgba(255,255,255,.07)}
+.oa-u-cd-num{font-size:2.2rem;font-weight:900;color:#ff4444;line-height:1;font-variant-numeric:tabular-nums}
+.oa-u-cd-lbl{font-size:.62em;color:#8fafc7;text-transform:uppercase;letter-spacing:.1em}
+</style>
+
+<div class="oa-usual-widget[#if IS_ALERT="1"#] active[#endif IS_ALERT#]" id="oaUWidget">
+  [#if IS_ALERT="1"#][#if OBJ_COUNTDOWN#]
+  <div class="oa-u-cd">
+    <div class="oa-u-cd-lbl">⏱ до укрытия</div>
+    <div class="oa-u-cd-num" id="oaUCd">[#OBJ_COUNTDOWN#]</div>
+  </div>
+  <script>
+  (function(){var n=[#OBJ_COUNTDOWN#],el=document.getElementById('oaUCd');
+  if(!el||n<=-60)return;setInterval(function(){if(n>-60){n--;el.textContent=n+' сек';}},1000);})();
+  </script>
+  [#endif OBJ_COUNTDOWN#][#endif IS_ALERT#]
+
+  <div class="oa-u-top">
+    <div class="oa-u-icon">
+      <img src="[#OBJ_IMG#]" alt="" onerror="this.src='/cms/icons/default.png'">
+    </div>
+    <div class="oa-u-text">
+      <div class="oa-u-status">Статус: [#OBJ_STATUS#]</div>
+      <div class="oa-u-name">[#OBJ_NAME#]</div>
+      <div class="oa-u-city">[#OBJ_CITY#]</div>
+    </div>
+  </div>
+
+  <div class="oa-u-bottom">
+    <div class="oa-u-hist-label">▸ История за час</div>
+    <div class="oa-u-track"><div class="oa-u-marquee" id="oaUHistory">[#OBJ_HISTORY#]</div></div>
+    <div class="oa-u-instr">[#OBJ_INSTRUCTIONS#]</div>
+    <div class="oa-u-time">Последняя тревога: [#OBJ_LAST_ALARM#]</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var w=document.getElementById('oaUWidget'), last=null, obj='[#CFG_OBJECT_NAME#]';
+  function applyActive(s){if(s&&s!=='No Alert')w.classList.add('active');else w.classList.remove('active');}
+  function update(){
+    var ps=['Status','Name','City','Instructions','LastAlarmTime','Img','History'];
+    Promise.all(ps.map(function(p){return fetch('/objects/?op=get&object='+obj+'&p='+p).then(function(r){return r.text();}).then(function(v){return{p:p,v:v.trim()};});}))
+    .then(function(rs){rs.forEach(function(r){
+      switch(r.p){
+        case 'Status': w.querySelector('.oa-u-status').textContent='Статус: '+r.v; applyActive(r.v); break;
+        case 'Name':   w.querySelector('.oa-u-name').textContent=r.v; break;
+        case 'City':   w.querySelector('.oa-u-city').textContent=r.v; break;
+        case 'Instructions': w.querySelector('.oa-u-instr').textContent=r.v; break;
+        case 'LastAlarmTime': w.querySelector('.oa-u-time').textContent='Последняя тревога: '+r.v; break;
+        case 'Img': var i=w.querySelector('.oa-u-icon img'); if(i)i.src=r.v||'/cms/icons/default.png'; break;
+        case 'History': var h=document.getElementById('oaUHistory'); if(h)h.textContent=r.v; break;
+      }
+    });});
+  }
+  function poll(){fetch('/objects/?op=get&object='+obj+'&p=Status').then(function(r){return r.text();}).then(function(v){v=v.trim();if(v!==last){last=v;update();}});}
+  applyActive(w.querySelector('.oa-u-status')?w.querySelector('.oa-u-status').textContent.replace('Статус:','').trim():'');
+  setInterval(poll,3000);
+})();
+</script>
