@@ -31,10 +31,8 @@ set NEW_VERSION=%MAJOR%.%MINOR%
 echo Current version: %CURRENT_VERSION%
 echo Target version:  %NEW_VERSION%
 
-:: 7. Создаем архив (используем стандартный tar в Windows 10/11)
-:: Файл будет называться oref_alert_v1.2.tgz для удобства, 
-:: либо просто oref_alert.tgz как вы просили.
-tar -czvf %ARCHIVE_NAME%_v%NEW_VERSION%.tgz cms img modules templates scripts
+:: 7. Создаем архив со ВСЕМИ папками проекта!
+tar -czvf %ARCHIVE_NAME%_v%NEW_VERSION%.tgz cms img import languages modules scripts templates
 
 :: 8. Если tar отработал успешно, сохраняем новую версию в файл
 if %ERRORLEVEL% EQU 0 (
