@@ -120,13 +120,15 @@
 </div>
 <div class="oa-widget">
   <div style="padding:12px 16px 14px">
-    <div class="oa-hlabel"><#LANG_OA_HISTORY_TITLE#></div>
-    [#if HISTORY#]
+    <div class="oa-hlabel"><#LANG_OA_HISTORY_TITLE#></div>[#if HISTORY#]
     [#begin HISTORY#]
     <div class="oa-ev">
       <div class="oa-ev-ts">[#DATE#]</div>
-      <div style="flex:1"><div class="oa-ev-name">[#EVENT#] — [#CAT_NAME#]</div>[#if MY_AREAS#]<div class="oa-ev-my">📍 [#MY_AREAS#]</div>[#endif MY_AREAS#]</div>
-      <div class="oa-ev-all">[#ALL_AREAS#]</div>
+      <div style="flex:1">
+          <div class="oa-ev-name">[#EVENT#] — [#CAT_NAME#]</div>
+          [#if MY_AREAS#]<div class="oa-ev-my">📍[#MY_AREAS#]</div>[#endif MY_AREAS#]
+          <div class="oa-ev-all" style="font-size:11px; color:#888;">[#ALL_AREAS#]</div>
+      </div>
     </div>
     [#end HISTORY#]
     [#else HISTORY#]<p style="color:#4a90d9;font-size:12px;margin:0"><#LANG_OA_NO_HISTORY#></p>[#endif HISTORY#]
