@@ -50,15 +50,10 @@ $dictionary = array(
     'OA_CODE_CLEAR'         => 'On all-clear (→ No Alert)',
     'OA_CODE_DRILL'         => 'On drill (cat. 15+)',
     'OA_WATCHER_TITLE'      => 'Auto-popup map setup',
-    'OA_DEBUG' => 'Debug logging (DebMes)',
+    'OA_DEBUG'              => 'Debug logging (DebMes)',
     'OA_TOTAL_ALERTS'       => 'Total alerts',
     'OA_UPDATED'            => 'Updated',
     'OA_HISTORY_TITLE'      => 'Event history',
     'OA_NO_HISTORY'         => 'No events yet',
 );
-
-foreach ($dictionary as $k => $v) {
-    if (!defined('LANG_' . $k)) {
-        define('LANG_' . $k, $v);
-    }
-}
+foreach ($dictionary as $k => $v) { if (!defined('LANG_' . $k)) { define('LANG_' . $k, $v); } }

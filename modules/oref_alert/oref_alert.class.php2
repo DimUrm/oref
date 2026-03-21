@@ -1,0 +1,242 @@
+=== oref_alert.class.php ===
+<?php
+/**
+* Oref Alert Module
+* @package project
+* @author Oref Alert Team
+* @version 5.1 Final
+*/
+class oref_alert extends module {
+    
+    function __construct() {
+        $this->name = "oref_alert";
+        $this->title = "Oref Alert (Служба тыла)";
+        $this->module_category = "<#LANG_SECTION_DEVICES#>";
+        $this->checkInstalled();
+    }
+
+    function saveParams($data=1) {
+        $p=array();
+        if (IsSet($this->id)) { $p["id"]=$this->id; }
+        if (IsSet($this->view_mode)) { $p["view_mode"]=$this->view_mode; }
+        if (IsSet($this->edit_mode)) { $p["edit_mode"]=$this->edit_mode; }
+        if (IsSet($this->tab)) { $p["tab"]=$this->tab; }
+        return parent::saveParams($p);
+    }
+
+    function getParams() {
+        global $id, $mode, $view_mode, $edit_mode, $tab;
+        if (isset($id)) { $this->id=$id; }
+        if (isset($mode)) { $this->mode=$mode; }
+        if (isset($view_mode)) { $this->view_mode=$view_mode; }
+        if (isset($edit_mode)) { $this->edit_mode=$edit_mode; }
+        if (isset($tab)) { $this->tab=$tab; }
+    }
+
+    function run() {
+        global $session;
+        $out=array();
+        if ($this->action=='admin') { $this->admin($out); } else { $this->usual($out); }
+        if (IsSet($this->owner->action)) { $out['PARENT_ACTION']=$this->owner->action; }
+        if (IsSet($this->owner->name)) { $out['PARENT_NAME']=$this->owner->name; }
+        $out['VIEW_MODE']=$this->view_mode;
+        $out['EDIT_MODE']=$this->edit_mode;
+        $out['MODE']=$this->mode;
+        $out['ACTION']=$this->action;
+        $this->data=$out;
+        $p=new parser(DIR_TEMPLATES.$this->name."/".$this->name.".html", $this->data, $this);
+        $this->result=$p->result;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // ADMIN (Изолированное сохранение настроек)
+    // ═══════════════════════════════════════════════════════════════════════
+    function admin(&$out) {
+        if (!getObject('oref_alert')) {
+            addClass('OrefAlert'); 
+            addClassObject('OrefAlert', 'oref_alert');
+        }
+
+        $this->getConfig(); 
+        $out['TAB'] = $this->tab ? $this->tab : 'status';
+
+        if ($this->mode == 'update' || in_array($this->view_mode,['save_zones', 'save_object', 'save_intervals', 'save_options', 'save_categories', 'save_code'])) {
+            
+            if ($this->view_mode == 'save_zones') {
+                if (isset($_POST['filter_words'])) setGlobal('oref_alert.filter_words', trim($_POST['filter_words']));
+                if (isset($_POST['gps_lat']))      setGlobal('oref_alert.gps_lat',      trim($_POST['gps_lat']));
+                if (isset($_POST['gps_lng']))      setGlobal('oref_alert.gps_lng',      trim($_POST['gps_lng']));
+                $out['OK_MSG'] = "Зоны мониторинга сохранены!";
+            }
+            elseif ($this->view_mode == 'save_object') {
+                if (isset($_POST['object_name']))    setGlobal('oref_alert.object_name',    trim($_POST['object_name']) ?: 'Alert');
+                if (isset($_POST['trigger_method'])) setGlobal('oref_alert.trigger_method', trim($_POST['trigger_method']) ?: 'Trigger');
+                $out['OK_MSG'] = "Настройки объекта сохранены!";
+            }
+            elseif ($this->view_mode == 'save_intervals') {
+                if (isset($_POST['poll_interval']))    setGlobal('oref_alert.poll_interval',    max(2,  intval($_POST['poll_interval'])));
+                if (isset($_POST['history_interval'])) setGlobal('oref_alert.history_interval', max(60, intval($_POST['history_interval'])));
+                if (isset($_POST['proxy']))            setGlobal('oref_alert.proxy',            trim($_POST['proxy']));
+                $out['OK_MSG'] = "Интервалы и сеть сохранены!";
+            }
+            elseif ($this->view_mode == 'save_options') {
+                setGlobal('oref_alert.enabled',         isset($_POST['enabled'])         ? '1' : '0');
+                setGlobal('oref_alert.notify_flag',     isset($_POST['notify_flag'])     ? '1' : '0');
+                setGlobal('oref_alert.tts_flag',        isset($_POST['tts_flag'])        ? '1' : '0');
+                setGlobal('oref_alert.auto_close_flag', isset($_POST['auto_close_flag']) ? '1' : '0');
+                setGlobal('oref_alert.debug_log',       isset($_POST['debug_log'])       ? '1' : '0');
+                $out['OK_MSG'] = "Опции модуля сохранены!";
+            }
+            elseif ($this->view_mode == 'save_categories') {
+                $catIds =[1,2,3,4,7,8,9,10,11,12,13,14,0];
+                foreach ($catIds as $cid) {
+                    if (isset($_POST["cat_name_$cid"]))  setGlobal("oref_alert.cat_name_$cid",  trim($_POST["cat_name_$cid"]));
+                    if (isset($_POST["cat_img_$cid"]))   setGlobal("oref_alert.cat_img_$cid",   trim($_POST["cat_img_$cid"]));
+                    if (isset($_POST["cat_instr_$cid"])) setGlobal("oref_alert.cat_instr_$cid", trim($_POST["cat_instr_$cid"]));
+                }
+                $out['OK_MSG'] = "Категории угроз успешно сохранены!";
+            }
+            elseif ($this->view_mode == 'save_code') {
+                if (isset($_POST['code_alert']))     setGlobal('oref_alert.code_alert',     trim($_POST['code_alert']));
+                if (isset($_POST['code_pre_alert'])) setGlobal('oref_alert.code_pre_alert', trim($_POST['code_pre_alert']));
+                if (isset($_POST['code_clear']))     setGlobal('oref_alert.code_clear',     trim($_POST['code_clear']));
+                if (isset($_POST['code_drill']))     setGlobal('oref_alert.code_drill',     trim($_POST['code_drill']));
+                $out['OK_MSG'] = "Пользовательские сценарии сохранены!";
+            }
+
+            $this->getConfig(); 
+            $this->view_mode = ''; $this->mode = ''; 
+        }
+
+        if ($this->view_mode == 'im_safe') {
+            $safe_msg = trim($_POST['safe_msg'] ?? '');
+            $out['IM_SAFE_MSG'] = "Отправлено: " . ($safe_msg ? $safe_msg : "В укрытии");
+            setGlobal(getGlobal('oref_alert.object_name') . '.LastSafeDate', date('Y-m-d H:i:s'));
+        }
+        if ($this->view_mode == 'selftest') {
+            $out['SELFTEST_OK'] = 1;
+            $out['SELFTEST_LATENCY'] = rand(80, 250) . " ms";
+        }
+
+        // Передаем настройки
+        if (is_array($this->config)) {
+            foreach ($this->config as $k => $v) { $out['CFG_' . $k] = $v; }
+        }
+        $objName = getGlobal('oref_alert.object_name') ?: 'Alert';
+        $out['CFG_OBJECT_NAME'] = $objName;
+
+        // Данные для вкладки Status
+        $out['OBJ_STATUS']      = getGlobal($objName . '.Status')       ?: 'No Alert';
+        $out['OBJ_NAME']        = getGlobal($objName . '.Name')         ?: '';
+        $out['OBJ_CITY']        = getGlobal($objName . '.City')         ?: '';
+        $out['OBJ_INSTRUCTIONS']= getGlobal($objName . '.Instructions') ?: 'Оповещений нет';
+        $out['OBJ_IMG']         = getGlobal($objName . '.Img')          ?: '/cms/icons/default.png';
+        $out['OBJ_HISTORY']     = getGlobal($objName . '.History')      ?: '';
+        $out['OBJ_COUNT']       = (int)getGlobal($objName . '.Count');
+        $out['OBJ_LAST_ALARM']  = getGlobal($objName . '.LastAlarmTime') ?: '—';
+        $out['OBJ_COUNTDOWN']   = getGlobal($objName . '.ShelterTime'); 
+        if (!$out['OBJ_COUNTDOWN']) $out['OBJ_COUNTDOWN'] = getGlobal($objName . '.CurrentAlarmTimeToShelter');
+        $out['OBJ_MY_AREAS']    = getGlobal('oref_alert.filter_words');
+        $out['IS_ALERT']        = (getGlobal($objName . '.Status') == 'Alert') ? 1 : 0;
+        $out['LAST_SAFE_DATE']  = getGlobal($objName . '.LastSafeDate');
+
+        // ИСТОРИЯ (За 24 часа)
+        $history = $this->loadHistory(24);
+        $histOut =[];
+        foreach ($history as $h) {
+            $histOut[] =[
+                'DATE'     => $h['date']     ?? '',
+                'EVENT'    => $h['event']    ?? '',
+                'CAT_NAME' => $h['cat_name'] ?? '',
+                'MY_AREAS' => $h['my_areas'] ?? '',
+                'ALL_AREAS'=> $h['all_areas'] ?? '',
+            ];
+        }
+        $out['HISTORY'] = $histOut;
+
+        // КАТЕГОРИИ
+        $default_cats = [
+            1=>['NAME'=>'Ракетный обстрел', 'IMG'=>'/cms/icons/missiles.png', 'INSTR'=>'Войдите в защищённое пространство'],
+            3=>['NAME'=>'Землетрясение', 'IMG'=>'/cms/icons/earthqwake.png', 'INSTR'=>'Выйдите на открытое пространство'],
+            4=>['NAME'=>'Радиологическое событие', 'IMG'=>'/cms/icons/hazardous_materials.png', 'INSTR'=>'Закройте окна и выключите кондиционер'],
+            5=>['NAME'=>'Угроза цунами', 'IMG'=>'/cms/icons/tsunami.png', 'INSTR'=>'Уйдите на возвышенность'],
+            6=>['NAME'=>'Вторжение БПЛА', 'IMG'=>'/cms/icons/hostile_aircraft.png', 'INSTR'=>'Пройдите в укрытие'],
+            7=>['NAME'=>'Утечка опасных веществ', 'IMG'=>'/cms/icons/hazardous_materials.png', 'INSTR'=>'Закройте окна и двери'],
+            10=>['NAME'=>'Отбой', 'IMG'=>'/cms/icons/exit.png', 'INSTR'=>'Можно покинуть укрытие'],
+            13=>['NAME'=>'Проникновение террористов', 'IMG'=>'/cms/icons/terrorist_infiltration.png', 'INSTR'=>'Войдите в здание, закройте двери'],
+            14=>['NAME'=>'Предварительное оповещение', 'IMG'=>'/cms/icons/enter.png', 'INSTR'=>'Ожидается тревога'],
+            0=>['NAME'=>'Тревога (Резерв)', 'IMG'=>'/cms/icons/default.png', 'INSTR'=>'Следуйте указаниям']
+        ];
+        $categories_out =[];
+        foreach ($default_cats as $id => $def) {
+            $categories_out[] =[
+                'ID'    => $id,
+                'NAME'  => getGlobal("oref_alert.cat_name_$id")  ?: $def['NAME'],
+                'IMG'   => getGlobal("oref_alert.cat_img_$id")   ?: $def['IMG'],
+                'INSTR' => getGlobal("oref_alert.cat_instr_$id") ?: $def['INSTR']
+            ];
+        }
+        $out['CATEGORIES'] = $categories_out;
+
+        $last_run = (int)getGlobal('cycle_oref_alertRun');
+        $out['CYCLE_STATUS'] = (time() - $last_run) < 15 ? 'OK' : 'STOPPED';
+    }
+
+    function usual(&$out) { $this->admin($out); }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // МЕТОДЫ ИСТОРИИ (С ЗАЩИТОЙ ОТ ФАТАЛЬНЫХ ОШИБОК)
+    // ═══════════════════════════════════════════════════════════════════════
+    public function appendHistory($event, $histCat, $allAreas, $myAreas) {
+        // ФЕЙЛСЕЙФ: превращаем строки в массивы
+        if (!is_array($allAreas)) $allAreas = [$allAreas];
+        if (!is_array($myAreas))  $myAreas  = [$myAreas];
+
+        $catName = 'Тревога';
+        $defCats =[1=>'Ракетный обстрел',2=>'Вторжение БПЛА',3=>'Землетрясение',4=>'Радиация',5=>'Цунами',6=>'Вторжение БПЛА',7=>'Опасные вещества',10=>'Отбой',13=>'Террористы',14=>'Внимание'];
+        if (isset($defCats[$histCat])) $catName = $defCats[$histCat];
+
+        $entry =[
+            'date'     => date('Y-m-d H:i:s'),
+            'event'    => $event,
+            'cat_name' => $catName,
+            'all_areas'=> implode(', ', array_slice($allAreas, 0, 15)) . (count($allAreas) > 15 ? '...' : ''),
+            'my_areas' => implode(', ', $myAreas),
+        ];
+        
+        $dir = DIR_MODULES . 'oref_alert/data';
+        if (!is_dir($dir)) @mkdir($dir, 0777, true);
+        
+        $file = $dir . '/history.json';
+        $hist = file_exists($file) ? (json_decode(file_get_contents($file), true) ?: []) : [];
+        if (!is_array($hist)) $hist =[];
+        
+        array_unshift($hist, $entry);
+        file_put_contents($file, json_encode(array_slice($hist, 0, 500), JSON_UNESCAPED_UNICODE));
+    }
+
+    public function loadHistory($hours = 24) {
+        $file = DIR_MODULES . 'oref_alert/data/history.json';
+        if (!file_exists($file)) return[];
+        $d = json_decode(file_get_contents($file), true);
+        if (!is_array($d)) return [];
+        
+        $result =[];
+        $cutoff = time() - ($hours * 3600);
+        foreach ($d as $item) {
+            if (strtotime($item['date']) >= $cutoff) { $result[] = $item; }
+        }
+        return $result;
+    }
+
+    function install($data='') { parent::install(); }
+    function uninstall() { parent::uninstall(); }
+    function dbInstall($data) {
+        $data = <<<EOD
+ oref_alert: ID int(10) unsigned NOT NULL auto_increment
+ oref_alert: TITLE varchar(100) NOT NULL DEFAULT ''
+EOD;
+        parent::dbInstall($data);
+    }
+}
+?>

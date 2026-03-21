@@ -1,19 +1,14 @@
 <?php
 /**
  * oref_map.php — Kiosk-карта тревог OrefAlert
- * Публичная точка входа: http://[server]/cms/oref_map.php
- *
- * Файл находится в /cms/ — этот путь доступен через Apache без ограничений.
  */
 chdir(dirname(__FILE__) . '/../');
 include_once('./config.php');
 include_once('./lib/loader.php');
 include_once('./load_settings.php');
 
-// Имя объекта из конфига модуля
 $objName = getGlobal('oref_alert.object_name') ?: 'Alert';
 
-// Отдаём полную HTML-страницу карты
 header('Content-Type: text/html; charset=utf-8');
 header('X-Frame-Options: SAMEORIGIN');
 ?>
@@ -28,7 +23,6 @@ header('X-Frame-Options: SAMEORIGIN');
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;overflow:hidden;background:#0a1018;color:#e8edf2;font-family:'Segoe UI',sans-serif}
-
 #standby{position:absolute;inset:0;z-index:10;background:linear-gradient(160deg,#0a1018,#0f1923);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .6s}
 #standby.hidden{opacity:0;pointer-events:none}
 .sb-flag{font-size:5rem;animation:float 3s ease-in-out infinite}
@@ -40,10 +34,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1018;color:#e8edf
 .sb-clock{font-size:3.5rem;font-weight:300;color:#8fafc7;letter-spacing:.1em;font-variant-numeric:tabular-nums}
 .sb-date{font-size:.9rem;color:#4a6a8a;letter-spacing:.06em}
 .sb-hist{max-width:500px;text-align:center;font-size:.8rem;color:#4a6a8a;border-top:1px solid rgba(255,255,255,.05);padding-top:14px;direction:rtl;line-height:1.6}
-
 #alert-screen{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .4s}
 #alert-screen.show{opacity:1;pointer-events:all}
-
 .al-hdr{flex-shrink:0;background:linear-gradient(90deg,#1a0000,#2a0505);border-bottom:3px solid #ff3333;padding:10px 16px;display:flex;align-items:center;gap:12px;animation:hblink 1.4s infinite}
 @keyframes hblink{0%,100%{border-color:#ff3333}50%{border-color:#ff8800}}
 .al-hdr.pre{background:linear-gradient(90deg,#1a1000,#2a1a00);border-color:#ffaa44;animation:none}
@@ -59,7 +51,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1018;color:#e8edf
 .al-name{font-size:1rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .al-zone{font-size:.75rem;color:#8fafc7}
 .al-img{width:52px;height:52px;object-fit:contain;background:#1e2d3d;border-radius:8px;padding:4px}
-
 .cd-bar{flex-shrink:0;display:flex;align-items:center;gap:16px;background:rgba(255,50,50,.1);border-bottom:1px solid rgba(255,50,50,.2);padding:8px 16px}
 .cd-bar.hidden{display:none}
 .cd-lbl{font-size:.6rem;color:#8fafc7;text-transform:uppercase;letter-spacing:.1em}
@@ -67,12 +58,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1018;color:#e8edf
 .cd-city-ru{font-size:1rem;font-weight:700;color:#ffaa44}
 .cd-city-he{font-size:.8rem;color:#8fafc7;direction:rtl}
 .al-instr{font-size:.85rem;color:#c9a84c;background:rgba(255,180,0,.07);border-left:3px solid #c9a84c;padding:4px 10px;border-radius:0 4px 4px 0;margin-top:2px}
-
 #map{flex:1;z-index:1}
-
 .al-footer{flex-shrink:0;display:flex;justify-content:space-between;align-items:center;background:#0a1018;border-top:1px solid rgba(255,255,255,.06);padding:5px 16px;font-size:.7rem}
 .al-fl{color:#4a90d9}.al-fr{color:#4a6a8a}
-
 #flash{position:fixed;inset:0;z-index:100;background:rgba(255,50,50,.7);pointer-events:none;opacity:0}
 #flash.on{animation:fa .8s ease-out forwards}
 @keyframes fa{0%{opacity:.7}100%{opacity:0}}

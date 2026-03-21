@@ -51,22 +51,21 @@
 .oa-ac-he{direction:rtl;color:#888;font-size:11px}
 </style>
 
-[#if IM_SAFE_MSG#]<div class="alert alert-success" style="margin-bottom:8px">🛡️ [#IM_SAFE_MSG#]</div>[#endif IM_SAFE_MSG#]
-[#if SELFTEST_OK="1"#]<div class="alert alert-success">✅ <#LANG_OA_SELFTEST#> — OK | [#SELFTEST_LATENCY#]</div>[#endif SELFTEST_OK#]
-[#if SELFTEST_OK="0"#]<div class="alert alert-danger">❌ <#LANG_OA_SELFTEST#> — FAIL | [#SELFTEST_ERROR#]</div>[#endif SELFTEST_OK#]
+[#if IM_SAFE_MSG#]<div class="alert alert-success" style="margin-bottom:8px">🛡️[#IM_SAFE_MSG#]</div>[#endif IM_SAFE_MSG#][#if SELFTEST_OK="1"#]<div class="alert alert-success">✅ <#LANG_OA_SELFTEST#> — OK |[#SELFTEST_LATENCY#]</div>[#endif SELFTEST_OK#][#if SELFTEST_OK="0"#]<div class="alert alert-danger">❌ <#LANG_OA_SELFTEST#> — FAIL | [#SELFTEST_ERROR#]</div>[#endif SELFTEST_OK#][#if OK_MSG#]<div class="alert alert-success">✅ [#OK_MSG#]</div>[#endif OK_MSG#]
 
+<!-- === 4. ПРАВКА: ДОБАВЛЕНА ВКЛАДКА СПРАВКА === -->
 <ul class="nav nav-tabs" style="margin-bottom:16px">
   <li [#if TAB="status"#]class="active"[#endif TAB#]><a href="?tab=status"><#LANG_OA_TAB_STATUS#></a></li>
   <li [#if TAB="settings"#]class="active"[#endif TAB#]><a href="?tab=settings"><#LANG_OA_TAB_SETTINGS#></a></li>
   <li [#if TAB="categories"#]class="active"[#endif TAB#]><a href="?tab=categories"><#LANG_OA_TAB_CATEGORIES#></a></li>
   <li [#if TAB="code"#]class="active"[#endif TAB#]><a href="?tab=code"><#LANG_OA_TAB_CODE#></a></li>
+  <li [#if TAB="help"#]class="active"[#endif TAB#]><a href="?tab=help">📖 Справка</a></li>
 </ul>
 
 [#if TAB="status"#]
 <div class="row">
 <div class="col-md-5">
-<div class="oa-widget[#if IS_ALERT="1"#] active[#endif IS_ALERT#]" id="oaWidget">
-  [#if IS_ALERT="1"#][#if OBJ_COUNTDOWN#]
+<div class="oa-widget[#if IS_ALERT="1"#] active[#endif IS_ALERT#]" id="oaWidget">[#if IS_ALERT="1"#][#if OBJ_COUNTDOWN#]
   <div class="oa-cd">
     <div><div class="oa-cd-lbl"><#LANG_OA_COUNTDOWN#></div><div class="oa-cd-n" id="oaCd">[#OBJ_COUNTDOWN#]</div></div>
     <div style="color:#ffaa44;font-size:.85rem">[#OBJ_MY_AREAS#]</div>
@@ -104,8 +103,7 @@
 <div class="oa-card">
   <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
     <a href="?view_mode=selftest&tab=status" class="btn btn-default btn-sm">🔌 <#LANG_OA_SELFTEST#></a>
-    <a href="/cms/oref_map.php" target="_blank" class="btn btn-primary btn-sm">🗺️ <#LANG_OA_OPEN_MAP#></a>
-    [#module name="xray" action="service" cycle="oref_alert"#]
+    <a href="/cms/oref_map.php" target="_blank" class="btn btn-primary btn-sm">🗺️ <#LANG_OA_OPEN_MAP#></a>[#module name="xray" action="service" cycle="oref_alert"#]
   </div>
   <h5 style="margin-top:0;margin-bottom:8px;font-size:13px;font-weight:600">🛡️ <#LANG_OA_IM_SAFE#></h5>
   <form action="?" method="post" class="form-inline">
@@ -116,16 +114,17 @@
       <span class="input-group-btn"><button type="submit" class="btn btn-success"><#LANG_OA_IM_SAFE_BTN#> 🛡️</button></span>
     </div>
   </form>
-  [#if LAST_SAFE_DATE#]<p class="text-muted" style="font-size:11px;margin:4px 0 0">Последний раз: [#LAST_SAFE_DATE#]</p>[#endif LAST_SAFE_DATE#]
+  [#if LAST_SAFE_DATE#]<p class="text-muted" style="font-size:11px;margin:4px 0 0">Последний раз:[#LAST_SAFE_DATE#]</p>[#endif LAST_SAFE_DATE#]
 </div>
 <div class="oa-widget">
   <div style="padding:12px 16px 14px">
-    <div class="oa-hlabel"><#LANG_OA_HISTORY_TITLE#></div>[#if HISTORY#]
+    <div class="oa-hlabel"><#LANG_OA_HISTORY_TITLE#> (За [#CFG_HIST_PERIOD#] ч)</div>
+    [#if HISTORY#]
     [#begin HISTORY#]
     <div class="oa-ev">
       <div class="oa-ev-ts">[#DATE#]</div>
       <div style="flex:1">
-          <div class="oa-ev-name">[#EVENT#] — [#CAT_NAME#]</div>
+          <div class="oa-ev-name">[#EVENT#] —[#CAT_NAME#]</div>
           [#if MY_AREAS#]<div class="oa-ev-my">📍[#MY_AREAS#]</div>[#endif MY_AREAS#]
           <div class="oa-ev-all" style="font-size:11px; color:#888;">[#ALL_AREAS#]</div>
       </div>
@@ -140,8 +139,7 @@
 (function(){
   var w=document.getElementById('oaWidget'),last=null,obj='[#CFG_OBJECT_NAME#]';
   function act(s){if(s&&s!=='No Alert')w.classList.add('active');else w.classList.remove('active');}
-  function upd(){
-    ['Status','Name','City','Instructions','LastAlarmTime','Img','History'].forEach(function(p){
+  function upd(){['Status','Name','City','Instructions','LastAlarmTime','Img','History'].forEach(function(p){
       fetch('/objects/?op=get&object='+obj+'&p='+p).then(function(r){return r.text();}).then(function(v){v=v.trim();
         if(p==='Status'){document.getElementById('oaStatus').textContent='Статус: '+v;act(v);}
         else if(p==='Name')document.getElementById('oaName').textContent=v;
@@ -160,7 +158,6 @@
 </script>
 [#endif TAB#]
 
-
 [#if TAB="settings"#]
 <div class="row">
 <div class="col-md-8">
@@ -169,16 +166,6 @@
   <input type="hidden" name="view_mode" value="save_zones">
   <input type="hidden" name="tab" value="settings">
   <input type="hidden" name="mode" value="update">
-  <input type="hidden" name="object_name"      value="[#CFG_OBJECT_NAME#]">
-  <input type="hidden" name="trigger_method"   value="[#CFG_TRIGGER_METHOD#]">
-  <input type="hidden" name="poll_interval"    value="[#CFG_POLL#]">
-  <input type="hidden" name="history_interval" value="[#CFG_HIST_INTERVAL#]">
-  <input type="hidden" name="proxy"            value="[#CFG_PROXY#]">
-  [#if CFG_ENABLED="1"#]<input type="hidden" name="enabled" value="1">[#endif CFG_ENABLED#]
-  [#if CFG_NOTIFY="1"#]<input type="hidden" name="notify_flag" value="1">[#endif CFG_NOTIFY#]
-  [#if CFG_TTS="1"#]<input type="hidden" name="tts_flag" value="1">[#endif CFG_TTS#]
-  [#if CFG_AUTO_CLOSE="1"#]<input type="hidden" name="auto_close_flag" value="1">[#endif CFG_AUTO_CLOSE#]
-  [#if CFG_DEBUG="1"#]<input type="hidden" name="debug_log" value="1">[#endif CFG_DEBUG#]
   <div class="oa-card">
     <h5 style="margin-top:0">🎯 Мои зоны</h5>
     <div id="oaBadges" style="min-height:26px;margin-bottom:8px">
@@ -230,17 +217,6 @@
   <input type="hidden" name="view_mode" value="save_object">
   <input type="hidden" name="tab" value="settings">
   <input type="hidden" name="mode" value="update">
-  <input type="hidden" name="filter_words"     value="[#CFG_FILTER_WORDS#]">
-  <input type="hidden" name="gps_lat"          value="[#CFG_GPS_LAT#]">
-  <input type="hidden" name="gps_lng"          value="[#CFG_GPS_LNG#]">
-  <input type="hidden" name="poll_interval"    value="[#CFG_POLL#]">
-  <input type="hidden" name="history_interval" value="[#CFG_HIST_INTERVAL#]">
-  <input type="hidden" name="proxy"            value="[#CFG_PROXY#]">
-  [#if CFG_ENABLED="1"#]<input type="hidden" name="enabled" value="1">[#endif CFG_ENABLED#]
-  [#if CFG_NOTIFY="1"#]<input type="hidden" name="notify_flag" value="1">[#endif CFG_NOTIFY#]
-  [#if CFG_TTS="1"#]<input type="hidden" name="tts_flag" value="1">[#endif CFG_TTS#]
-  [#if CFG_AUTO_CLOSE="1"#]<input type="hidden" name="auto_close_flag" value="1">[#endif CFG_AUTO_CLOSE#]
-  [#if CFG_DEBUG="1"#]<input type="hidden" name="debug_log" value="1">[#endif CFG_DEBUG#]
   <div class="oa-card">
     <h5 style="margin-top:0">🔧 Объект и метод</h5>
     <div class="form-group">
@@ -267,16 +243,6 @@
   <input type="hidden" name="view_mode" value="save_intervals">
   <input type="hidden" name="tab" value="settings">
   <input type="hidden" name="mode" value="update">
-  <input type="hidden" name="filter_words"  value="[#CFG_FILTER_WORDS#]">
-  <input type="hidden" name="gps_lat"       value="[#CFG_GPS_LAT#]">
-  <input type="hidden" name="gps_lng"       value="[#CFG_GPS_LNG#]">
-  <input type="hidden" name="object_name"   value="[#CFG_OBJECT_NAME#]">
-  <input type="hidden" name="trigger_method" value="[#CFG_TRIGGER_METHOD#]">
-  [#if CFG_ENABLED="1"#]<input type="hidden" name="enabled" value="1">[#endif CFG_ENABLED#]
-  [#if CFG_NOTIFY="1"#]<input type="hidden" name="notify_flag" value="1">[#endif CFG_NOTIFY#]
-  [#if CFG_TTS="1"#]<input type="hidden" name="tts_flag" value="1">[#endif CFG_TTS#]
-  [#if CFG_AUTO_CLOSE="1"#]<input type="hidden" name="auto_close_flag" value="1">[#endif CFG_AUTO_CLOSE#]
-  [#if CFG_DEBUG="1"#]<input type="hidden" name="debug_log" value="1">[#endif CFG_DEBUG#]
   <div class="oa-card">
     <h5 style="margin-top:0">⏱ Интервалы и сеть</h5>
     <div class="form-group">
@@ -310,23 +276,31 @@
   <input type="hidden" name="view_mode" value="save_options">
   <input type="hidden" name="tab" value="settings">
   <input type="hidden" name="mode" value="update">
-  <input type="hidden" name="filter_words"     value="[#CFG_FILTER_WORDS#]">
-  <input type="hidden" name="gps_lat"          value="[#CFG_GPS_LAT#]">
-  <input type="hidden" name="gps_lng"          value="[#CFG_GPS_LNG#]">
-  <input type="hidden" name="object_name"      value="[#CFG_OBJECT_NAME#]">
-  <input type="hidden" name="trigger_method"   value="[#CFG_TRIGGER_METHOD#]">
-  <input type="hidden" name="poll_interval"    value="[#CFG_POLL#]">
-  <input type="hidden" name="history_interval" value="[#CFG_HIST_INTERVAL#]">
-  <input type="hidden" name="proxy"            value="[#CFG_PROXY#]">
   <div class="oa-card">
     <h5 style="margin-top:0">🔔 Опции</h5>
     <div class="form-group">
       <div class="col-sm-offset-4 col-sm-8">
-        <div class="checkbox"><label><input type="checkbox" name="enabled"         value="1" [#if CFG_ENABLED="1"#]checked[#endif CFG_ENABLED#]>     <#LANG_OA_ENABLED#></label></div>
+        <div class="checkbox"><label><input type="checkbox" name="enabled"         value="1"[#if CFG_ENABLED="1"#]checked[#endif CFG_ENABLED#]>     <#LANG_OA_ENABLED#></label></div>
         <div class="checkbox"><label><input type="checkbox" name="notify_flag"     value="1" [#if CFG_NOTIFY="1"#]checked[#endif CFG_NOTIFY#]>        <#LANG_OA_NOTIFY_TG#></label></div>
-        <div class="checkbox"><label><input type="checkbox" name="tts_flag"        value="1" [#if CFG_TTS="1"#]checked[#endif CFG_TTS#]>              <#LANG_OA_TTS#></label></div>
+        <div class="checkbox"><label><input type="checkbox" name="tts_flag"        value="1"[#if CFG_TTS="1"#]checked[#endif CFG_TTS#]>              <#LANG_OA_TTS#></label></div>
         <div class="checkbox"><label><input type="checkbox" name="auto_close_flag" value="1" [#if CFG_AUTO_CLOSE="1"#]checked[#endif CFG_AUTO_CLOSE#]> <#LANG_OA_AUTO_CLOSE#></label></div>
         <div class="checkbox"><label><input type="checkbox" name="debug_log"       value="1" [#if CFG_DEBUG="1"#]checked[#endif CFG_DEBUG#]>           <#LANG_OA_DEBUG#></label></div>
+      </div>
+    </div>
+    <!-- === 2. ПРАВКА: ИЗМЕНЕНЫ ЛИМИТЫ AUTO_CLOSE (10-20) === -->
+    <div class="form-group">
+      <label class="col-sm-4 control-label">Автоотбой через (мин)</label>
+      <div class="col-sm-3">
+        <input type="number" class="form-control" name="auto_close_time" value="[#CFG_AUTO_CLOSE_TIME#]" min="10" max="20">
+        <p class="help-block" style="font-size:11px">Диапазон: 10 - 20 минут</p>
+      </div>
+    </div>
+    <!-- === 3. ПРАВКА: ИЗМЕНЕНЫ ЛИМИТЫ ИСТОРИИ (2-24) === -->
+    <div class="form-group">
+      <label class="col-sm-4 control-label">Хранить историю (часов)</label>
+      <div class="col-sm-3">
+        <input type="number" class="form-control" name="hist_period" value="[#CFG_HIST_PERIOD#]" min="2" max="24">
+        <p class="help-block" style="font-size:11px">Диапазон: 2 - 24 часа</p>
       </div>
     </div>
     <div class="form-group">
@@ -335,10 +309,7 @@
   </div>
 </form>
 
-<div class="oa-card">
-  <h5 style="margin-top:0">🗂️ <#LANG_OA_BUILTIN_DATA#></h5>
-  <p style="font-size:12px;margin-bottom:0"><span class="label label-success">✅ Встроено</span> &nbsp;<#LANG_OA_BUILTIN_HINT#></p>
-</div>
+<!-- === 1. ПРАВКА: БЛОК "ВСТРОЕННЫЕ ДАННЫЕ" БЫЛ СКРЫТ ОТСЮДА === -->
 
 </div>
 <div class="col-md-4">
@@ -366,6 +337,15 @@
       </table>
     </div>
   </div>
+
+  <!-- === 1. ПРАВКА: БЛОК ПЕРЕНЕСЕН СЮДА === -->
+  <div class="panel panel-info" style="margin-top: 15px;">
+    <div class="panel-heading"><b>🗂️ Встроенные данные</b></div>
+    <div class="panel-body" style="font-size:11px; padding: 8px;">
+      <span class="label label-success">✅ Встроено</span> <code>cities.json</code> и <code>polygons.json</code> находятся в <code>modules/oref_alert/data/</code>.<br>Карта с полигонами открывается кнопкой «Открыть карту» на вкладке Статус.
+    </div>
+  </div>
+
 </div>
 </div>
 
@@ -378,7 +358,7 @@
   var bempty= document.getElementById('oaBadgesEmpty');
   if(!ta) return;
 
-  function get(){ return ta.value ? ta.value.split(',').map(function(s){return s.trim();}).filter(Boolean) : []; }
+  function get(){ return ta.value ? ta.value.split(',').map(function(s){return s.trim();}).filter(Boolean) :[]; }
   function set(arr){ ta.value = arr.join(', '); render(); }
 
   function render(){
@@ -447,7 +427,6 @@
   render();
 })();
 
-
 function oaGPS(){
   var el=document.getElementById('oaGpsRes');
   if(!navigator.geolocation){el.textContent='GPS недоступен';return;}
@@ -461,8 +440,7 @@ function oaGPS(){
       .then(function(d){el.style.color=d.error?'orange':'green';el.textContent=d.error?'⚠️ Вне зон':'✅ '+d.he+' ('+d.countdown+' сек)';});
   },function(e){el.textContent='❌ '+e.message;});
 }
-</script>
-[#endif TAB#]
+</script>[#endif TAB#]
 
 
 [#if TAB="categories"#]
@@ -473,18 +451,15 @@ function oaGPS(){
   <input type="hidden" name="mode" value="update">
   <div style="display:grid;grid-template-columns:40px 1fr 1fr 2fr;gap:6px;padding:8px;background:#e9ecef;border-radius:4px;font-weight:700;font-size:12px;margin-bottom:4px">
     <div><#LANG_OA_CAT_NUM#></div><div><#LANG_OA_CAT_NAME#></div><div><#LANG_OA_CAT_ICON#></div><div><#LANG_OA_CAT_INSTR#></div>
-  </div>
-  [#begin CATEGORIES#]
+  </div>[#begin CATEGORIES#]
   <div style="display:grid;grid-template-columns:40px 1fr 1fr 2fr;gap:6px;padding:6px 8px;border-bottom:1px solid #dee2e6;align-items:center">
     <div><strong style="color:#495057">[#ID#]</strong></div>
     <div><input type="text" class="form-control input-sm" name="cat_name_[#ID#]"  value="[#NAME#]"></div>
     <div><input type="text" class="form-control input-sm" name="cat_img_[#ID#]"   value="[#IMG#]"  placeholder="/cms/icons/..."></div>
     <div><input type="text" class="form-control input-sm" name="cat_instr_[#ID#]" value="[#INSTR#]"></div>
-  </div>
-  [#end CATEGORIES#]
+  </div>[#end CATEGORIES#]
   <div style="margin-top:12px"><button type="submit" class="btn btn-success">💾 <#LANG_OA_SAVE#></button></div>
-</form>
-[#endif TAB#]
+</form>[#endif TAB#]
 
 
 [#if TAB="code"#]
@@ -518,5 +493,43 @@ function oaGPS(){
     <textarea class="oa-code" name="code_drill" placeholder="// DebMes('Учения кат.' . $histCat, 'oref_alert');">[#CODE_DRILL#]</textarea>
   </div>
   <button type="submit" class="btn btn-success">💾 <#LANG_OA_SAVE#></button>
-</form>
+</form>[#endif TAB#]
+
+<!-- === 4. ПРАВКА: ВКЛАДКА СПРАВКА === -->[#if TAB="help"#]
+<div class="row">
+  <div class="col-md-10">
+    <div class="oa-card">
+      <h4 style="margin-top:0; color:#2a9df4;">📖 Справка по работе с модулем Oref Alert</h4>
+      <p><b>Oref Alert</b> — это модуль для интеграции системы MajorDoMo с серверами Службы тыла Израиля (Pikud HaOref). Он обеспечивает мгновенное получение сигналов тревоги, отображение их на карте и запуск пользовательских сценариев (управление жалюзи, светом, отправка уведомлений).</p>
+      
+      <h5>📡 Как работает мониторинг:</h5>
+      <ul style="font-size:13px;">
+        <li>Цикл <code>cycle_oref_alert.php</code> постоянно опрашивает официальное API.</li>
+        <li>Если список городов пуст, мониторится <b>вся страна</b>.</li>
+        <li>Дополнительно раз в минуту опрашивается <b>API Истории</b> для защиты от пропусков (например, при кратковременном обрыве связи).</li>
+        <li>В случае тревоги срабатывает метод <code>Trigger</code> объекта <code>Alert</code>, а также выполняется ваш пользовательский код.</li>
+      </ul>
+
+      <h5>💻 Интеграция в интерфейс (Виджеты):</h5>
+      <p>Чтобы вывести компактный информер на любую сцену или дашборд, используйте стандартный вызов:</p>
+      <div class="help-code">&#91;#module name="oref_alert" mode="menu"#&#93;</div>
+
+      <h5>🗺️ Полноэкранная карта (Для планшета):</h5>
+      <p>Вы можете открыть интерактивную карту на весь экран (удобно для настенных панелей). Карта автоматически всплывает при тревоге и показывает полигон обстрела.</p>
+      <p><b>Ссылка:</b> <code>http://[IP_ВАШЕГО_СЕРВЕРА]/cms/oref_map.php</code></p>
+      <p>Для автоматического всплытия карты на других страницах добавьте скрипт:<br>
+      <code>&lt;script src="/templates/oref_alert/alert_watcher.js"&gt;&lt;/script&gt;</code></p>
+
+      <h5>🎛️ Объектная модель:</h5>
+      <p>Модуль заполняет свойства объекта (по умолчанию <code>Alert</code>).<br>
+      Главные свойства:
+      <ul style="font-size:13px;">
+        <li><code>Alert.Status</code> — <i>Alert</i> (Тревога) или <i>No Alert</i> (Тишина)</li>
+        <li><code>Alert.Category</code> — Номер категории (1 - Ракеты, 2 - БПЛА и т.д.)</li>
+        <li><code>Alert.City</code> — Список пострадавших зон на иврите.</li>
+      </ul>
+      </p>
+    </div>
+  </div>
+</div>
 [#endif TAB#]

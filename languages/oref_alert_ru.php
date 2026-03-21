@@ -1,8 +1,4 @@
 <?php
-/**
- * OrefAlert — Russian language file
- * @package project
- */
 $dictionary = array(
     'OA_STATUS_ALERT'       => 'Тревога',
     'OA_STATUS_NO_ALERT'    => 'Спокойно',
@@ -50,15 +46,10 @@ $dictionary = array(
     'OA_CODE_CLEAR'         => 'При отбое (→ No Alert)',
     'OA_CODE_DRILL'         => 'При учениях (кат. 15+)',
     'OA_WATCHER_TITLE'      => 'Автовсплытие карты — настройка',
-    'OA_DEBUG' => 'Логирование в журнал событий (DebMes)',
+    'OA_DEBUG'              => 'Логирование в журнал событий (DebMes)',
     'OA_TOTAL_ALERTS'       => 'Тревог всего',
     'OA_UPDATED'            => 'Обновлено',
     'OA_HISTORY_TITLE'      => 'История событий',
     'OA_NO_HISTORY'         => 'История пуста',
 );
-
-foreach ($dictionary as $k => $v) {
-    if (!defined('LANG_' . $k)) {
-        define('LANG_' . $k, $v);
-    }
-}
+foreach ($dictionary as $k => $v) { if (!defined('LANG_' . $k)) { define('LANG_' . $k, $v); } }

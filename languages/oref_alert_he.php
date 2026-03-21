@@ -1,7 +1,4 @@
 <?php
-/**
- * Hebrew language file for OrefAlert module
- */
 $dictionary = array(
     'OA_STATUS_ALERT'      => 'התרעה',
     'OA_STATUS_NO_ALERT'   => 'שקט',
@@ -15,9 +12,4 @@ $dictionary = array(
     'OA_COUNTDOWN'         => 'זמן לממ"ד',
     'OA_ALL_QUIET'         => 'הכל שקט',
 );
-
-foreach ($dictionary as $k => $v) {
-    if (!defined('LANG_' . $k)) {
-        define('LANG_' . $k, $v);
-    }
-}
+foreach ($dictionary as $k => $v) { if (!defined('LANG_' . $k)) { define('LANG_' . $k, $v); } }

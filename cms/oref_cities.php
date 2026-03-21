@@ -1,8 +1,6 @@
 <?php
 /**
  * oref_cities.php — публичный AJAX endpoint для поиска городов
- * Доступен без авторизации, не через admin.php
- * URL: /cms/oref_cities.php?q=Кирьят
  */
 chdir(dirname(__FILE__) . '/../');
 include_once('./config.php');
@@ -15,7 +13,6 @@ header('Access-Control-Allow-Origin: *');
 
 $q     = trim($_GET['q'] ?? '');
 $limit = min(20, intval($_GET['limit'] ?? 15));
-
 $op = trim($_GET['op'] ?? 'search');
 
 if ($op === 'gps') {
@@ -23,7 +20,7 @@ if ($op === 'gps') {
     $lng = floatval($_GET['lng'] ?? 0);
     if (!$lat || !$lng) { echo json_encode(['error' => 'invalid coords']); exit; }
     
-    $arr = json_decode(file_get_contents(DIR_MODULES . 'oref_alert/data/cities.json'), true) ?: [];
+    $arr = json_decode(file_get_contents(DIR_MODULES . 'oref_alert/data/cities.json'), true) ?:[];
     $best = null; $bestDist = PHP_INT_MAX;
     foreach ($arr as $city) {
         $clat = floatval($city['lat'] ?? 0);
