@@ -1,0 +1,113 @@
+VERSION: 1.44
+DATE: 25.03.2026 22:58:54
+------------------------------------------
+--- MODIFIED: cms\oref_alert\oref_map.php
+=>  * @version 6.9 (Auto-zoom focus & Flicker-free Side Panel)
+=> 
+=> 
+=> /* Карта */
+=> 
+=> /* Боковая панель */
+=> #side-panel {
+=>     width: 320px; background: #0f1923; border-left: 1px solid rgba(255,255,255,0.1);
+=>     display: flex; flex-direction: column; z-index: 5; padding: 15px; transition: all 0.8s ease;
+=> 
+=> /* Стили группировки в панели */
+=> 
+=> /* РЕЖИМ ТИШИНЫ (QUIET) */
+=> 
+=> /* ЭКРАН ОЖИДАНИЯ (STANDBY) */
+=> #standby { 
+=>     position: absolute; inset: 0; z-index: 100; 
+=>     display: flex; flex-direction: column; align-items: center; justify-content: center;
+=>     background: transparent; opacity: 0; pointer-events: none; transition: opacity 1s ease;
+=> 
+=> 
+=> 
+=> /* МОДАЛЬНОЕ ОКНО (ALERTS) */
+=> .alert-modal-overlay {
+=>     position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.92);
+=>     z-index: 1000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(15px);
+=> .alert-modal-window {
+=>     width: 90%; height: 85%; background: #1a0000; border: 6px solid #ff3333;
+=>     border-radius: 25px; box-shadow: 0 0 100px rgba(255, 0, 0, 0.8);
+=>     position: relative; overflow: hidden; display: flex; flex-direction: column;
+=> 
+=> 
+=> 
+=> 
+=> 
+=>             OrefAlert Kiosk v6.9 | OLED Safe
+=> 
+=> 
+=> var ISRAEL_CENTER = [31.5, 34.8];
+=> var ISRAEL_ZOOM = 8;
+=> 
+=> 
+=> var lastSidePanelHTML = ""; // Для предотвращения мерцания
+=> 
+=>             updateMapFocus(); // Пересчитываем фокус при добавлении
+=> 
+=>     var changed = false;
+=>             changed = true;
+=>         if (!activePolygons[name]) {
+=>             addCityToMap(name, myCitiesList.includes(name));
+=>             changed = true;
+=>     if (changed && activeCitiesList.length === 0) {
+=>         // Если все полигоны удалены - возвращаемся к общему виду
+=>         map.flyTo(ISRAEL_CENTER, ISRAEL_ZOOM, {duration: 2});
+=> 
+=> function updateMapFocus() {
+=>     var group = new L.featureGroup(Object.values(activePolygons));
+=>     if (Object.keys(activePolygons).length > 0) {
+=>         map.flyToBounds(group.getBounds(), {padding: [100, 100], duration: 1.5});
+=>     }
+=> }
+=> 
+=>     }
+=> }
+=> 
+=> }
+=> 
+=> 
+=> 
+=>         if (currentActiveCities.length === 0 && d.status !== 'Alert') { 
+=>             document.body.classList.add('quiet');
+=>         } else { 
+=>             document.body.classList.remove('quiet'); 
+=>         }
+=>         
+=> 
+=> }
+=> 
+=> 
+=>                 recentHtml += `<div class="side-group">
+=>                     <div class="side-cat-title">${cat}:</div>
+=>                     <div class="side-cities-list">${Array.from(grouped[cat]).sort().join('<br>')}</div>
+=>                     <div class="side-sep"></div>
+=>                 </div>`;
+=>         } else {
+=>             recentHtml = "<div style='color:#4a6a8a; font-size:0.75rem; text-align:center; margin-top:20px;'>Активных тревог нет</div>";
+=>         }
+=> 
+=>         // РЕШЕНИЕ ПРОБЛЕМЫ МЕРЦАНИЯ: Обновляем DOM только если HTML изменился
+=>         if (recentHtml !== lastSidePanelHTML) {
+=>             document.getElementById('recent-list').innerHTML = recentHtml;
+=>             lastSidePanelHTML = recentHtml;
+=>         }
+=> }
+=> 
+=> map.setView(ISRAEL_CENTER, ISRAEL_ZOOM);
+<=  * @version 1.43
+<= #side-panel { width: 320px; background: #0f1923; border-left: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; z-index: 5; padding: 15px; transition: all 0.8s ease; }
+<= #standby { position: absolute; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; background: transparent; opacity: 0; pointer-events: none; transition: opacity 1s ease; }
+<= .alert-modal-overlay { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.92); z-index: 1000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(15px); }
+<= .alert-modal-window { width: 90%; height: 85%; background: #1a0000; border: 6px solid #ff3333; border-radius: 25px; box-shadow: 0 0 100px rgba(255, 0, 0, 0.8); position: relative; overflow: hidden; display: flex; flex-direction: column; }
+<=             OrefAlert Kiosk v6.8 | OLED Safe
+<=             if (isMyCity) map.fitBounds(poly.getBounds(), {padding: [120, 120]});
+<=         addCityToMap(name, myCitiesList.includes(name));
+<=         if (currentActiveCities.length === 0 && d.status !== 'Alert') { document.body.classList.add('quiet'); } else { document.body.classList.remove('quiet'); }
+<=                 recentHtml += `<div class="side-group"><div class="side-cat-title">${cat}:</div><div class="side-cities-list">${Array.from(grouped[cat]).join('<br>')}</div><div class="side-sep"></div></div>`;
+<=         document.getElementById('recent-list').innerHTML = recentHtml || "<div style='color:#4a6a8a; font-size:0.75rem; text-align:center; margin-top:20px;'>Активных тревог нет</div>";
+<= map.setView([31.5, 34.8], 8);
+ 
