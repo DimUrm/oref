@@ -32,12 +32,12 @@
 .oa-stat .oa-sl{font-size:.65em;color:#8fafc7;text-transform:uppercase;letter-spacing:.1em}
 .oa-widget.active .oa-stat{background:rgba(255,68,68,.07);border-color:rgba(255,68,68,.25)}
 .oa-widget.active .oa-stat .oa-sv{color:#ff6b6b}
-.oa-ev{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px;flex-wrap:wrap}
+.oa-ev{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px;align-items:flex-start}
 .oa-ev:last-child{border:none}
 .oa-ev-ts{color:#4a90d9;white-space:nowrap;min-width:130px}
-.oa-ev-name{color:#e8edf2}
-.oa-ev-my{color:#ff6b6b;font-weight:600;direction:rtl}
-.oa-ev-all{color:#8fafc7;flex:1;direction:rtl}
+.oa-ev-name{font-weight:700;text-transform:uppercase;font-size:11px;margin-bottom:2px}
+.oa-ev-my{color:#e8edf2;font-weight:600;direction:rtl;margin-top:2px}
+.oa-ev-all{color:#4a6a8a;font-size:10px;direction:rtl;flex:1}
 .oa-card{background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:16px;margin-bottom:12px}
 .oa-code{width:100%;min-height:90px;font-family:monospace;font-size:12px;background:#1e1e2e;color:#cdd6f4;border:1px solid #313244;border-radius:6px;padding:10px;resize:vertical;box-sizing:border-box}
 .oa-badge{display:inline-flex;align-items:center;gap:4px;background:#1e2d3d;color:#2a9df4;border:1px solid rgba(42,157,244,.3);border-radius:12px;padding:2px 8px 2px 12px;margin:2px;font-size:12px;direction:rtl}
@@ -49,11 +49,11 @@
 .oa-ac-item:hover,.oa-ac-item.sel{background:#f0f7ff}
 .oa-ac-item b{color:#333}
 .oa-ac-he{direction:rtl;color:#888;font-size:11px}
+.help-code{background:#1e2d3d;color:#56ccf2;font-family:monospace;font-size:13px;padding:8px 12px;border-radius:4px;border-left:3px solid #2a9df4;margin:8px 0;user-select:all}
 </style>
 
 [#if IM_SAFE_MSG#]<div class="alert alert-success" style="margin-bottom:8px">🛡️[#IM_SAFE_MSG#]</div>[#endif IM_SAFE_MSG#][#if SELFTEST_OK="1"#]<div class="alert alert-success">✅ <#LANG_OA_SELFTEST#> — OK |[#SELFTEST_LATENCY#]</div>[#endif SELFTEST_OK#][#if SELFTEST_OK="0"#]<div class="alert alert-danger">❌ <#LANG_OA_SELFTEST#> — FAIL | [#SELFTEST_ERROR#]</div>[#endif SELFTEST_OK#][#if OK_MSG#]<div class="alert alert-success">✅ [#OK_MSG#]</div>[#endif OK_MSG#]
 
-<!-- === 4. ПРАВКА: ДОБАВЛЕНА ВКЛАДКА СПРАВКА === -->
 <ul class="nav nav-tabs" style="margin-bottom:16px">
   <li [#if TAB="status"#]class="active"[#endif TAB#]><a href="?tab=status"><#LANG_OA_TAB_STATUS#></a></li>
   <li [#if TAB="settings"#]class="active"[#endif TAB#]><a href="?tab=settings"><#LANG_OA_TAB_SETTINGS#></a></li>
@@ -65,7 +65,8 @@
 [#if TAB="status"#]
 <div class="row">
 <div class="col-md-5">
-<div class="oa-widget[#if IS_ALERT="1"#] active[#endif IS_ALERT#]" id="oaWidget">[#if IS_ALERT="1"#][#if OBJ_COUNTDOWN#]
+<div class="oa-widget[#if IS_ALERT="1"#] active[#endif IS_ALERT#]" id="oaWidget">
+  [#if IS_ALERT="1"#][#if OBJ_COUNTDOWN#]
   <div class="oa-cd">
     <div><div class="oa-cd-lbl"><#LANG_OA_COUNTDOWN#></div><div class="oa-cd-n" id="oaCd">[#OBJ_COUNTDOWN#]</div></div>
     <div style="color:#ffaa44;font-size:.85rem">[#OBJ_MY_AREAS#]</div>
@@ -77,14 +78,14 @@
     <div class="oa-text">
       <div class="oa-status" id="oaStatus">Статус: [#OBJ_STATUS#]</div>
       <div class="oa-name"   id="oaName">[#OBJ_NAME#]</div>
-      <div class="oa-city"   id="oaCity">[#OBJ_CITY#]</div>
+      <div class="oa-city"   id="oaCity" style="direction: rtl;">[#OBJ_CITY#] [#if OBJ_DISTANCE#]([#OBJ_DISTANCE#] км)[#endif#]</div>
     </div>
   </div>
   <div class="oa-bottom">
-    <div class="oa-hlabel">▸ <#LANG_OA_HISTORY_LABEL#></div>
+    <div class="oa-hlabel">▸ История тревог (страна за час)</div>
     <div class="oa-track"><div class="oa-mq" id="oaHistory">[#OBJ_HISTORY#]</div></div>
     <div class="oa-instr" id="oaInstr">[#OBJ_INSTRUCTIONS#]</div>
-    <div class="oa-time"  id="oaTime"><#LANG_OA_LAST_ALARM#>: [#OBJ_LAST_ALARM#]</div>
+    <div class="oa-time"  id="oaTime">Последняя тревога (мои зоны): [#OBJ_LAST_ALARM#]</div>
   </div>
 </div>
 <div class="oa-widget">
@@ -103,7 +104,8 @@
 <div class="oa-card">
   <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
     <a href="?view_mode=selftest&tab=status" class="btn btn-default btn-sm">🔌 <#LANG_OA_SELFTEST#></a>
-    <a href="/cms/oref_map.php" target="_blank" class="btn btn-primary btn-sm">🗺️ <#LANG_OA_OPEN_MAP#></a>[#module name="xray" action="service" cycle="oref_alert"#]
+    <a href="/cms/oref_alert/oref_map.php" target="_blank" class="btn btn-primary btn-sm">🗺️ <#LANG_OA_OPEN_MAP#></a>
+    [#module name="xray" action="service" cycle="oref_alert"#]
   </div>
   <h5 style="margin-top:0;margin-bottom:8px;font-size:13px;font-weight:600">🛡️ <#LANG_OA_IM_SAFE#></h5>
   <form action="?" method="post" class="form-inline">
@@ -114,20 +116,28 @@
       <span class="input-group-btn"><button type="submit" class="btn btn-success"><#LANG_OA_IM_SAFE_BTN#> 🛡️</button></span>
     </div>
   </form>
-  [#if LAST_SAFE_DATE#]<p class="text-muted" style="font-size:11px;margin:4px 0 0">Последний раз:[#LAST_SAFE_DATE#]</p>[#endif LAST_SAFE_DATE#]
+  [#if LAST_SAFE_DATE#]<p class="text-muted" style="font-size:11px;margin:4px 0 0">Последний раз: [#LAST_SAFE_DATE#]</p>[#endif LAST_SAFE_DATE#]
 </div>
 <div class="oa-widget">
   <div style="padding:12px 16px 14px">
-    <div class="oa-hlabel"><#LANG_OA_HISTORY_TITLE#> (За [#CFG_HIST_PERIOD#] ч)</div>
+    <div class="oa-hlabel"><#LANG_OA_HISTORY_TITLE#></div>
     [#if HISTORY#]
     [#begin HISTORY#]
     <div class="oa-ev">
-      <div class="oa-ev-ts">[#DATE#]</div>
+      <div class="oa-ev-ts" style="color: #4a90d9; font-weight: 400;">[#DATE#]</div>
       <div style="flex:1">
-          <div class="oa-ev-name">[#EVENT#] —[#CAT_NAME#]</div>
-          [#if MY_AREAS#]<div class="oa-ev-my">📍[#MY_AREAS#]</div>[#endif MY_AREAS#]
-          <div class="oa-ev-all" style="font-size:11px; color:#888;">[#ALL_AREAS#]</div>
+        <div class="oa-ev-name" style="font-weight: 700; text-transform: uppercase; font-size: 11px;
+          [#if EVENT="alert"#]color: #ff4444;[#endif EVENT="alert"#]
+          [#if EVENT="end"#]color: #44ff88; opacity: 0.7;[#endif EVENT="end"#]
+          [#if EVENT="auto_clear"#]color: #8fafc7; opacity: 0.5;[#endif EVENT="auto_clear"#]
+          [#if EVENT="pre_alert"#]color: #ffaa44;[#endif EVENT="pre_alert"#]">
+          [#CAT_NAME#]
+        </div>
+        [#if MY_AREAS!=""#]
+          <div class="oa-ev-my" style="margin-top: 2px; color: #e8edf2; font-weight: 600; direction: rtl;">📍 [#MY_AREAS#]</div>
+        [#endif#]
       </div>
+      <div class="oa-ev-all" style="font-size: 10px; color: #4a6a8a; direction: rtl; flex:1;">[#ALL_AREAS#]</div>
     </div>
     [#end HISTORY#]
     [#else HISTORY#]<p style="color:#4a90d9;font-size:12px;margin:0"><#LANG_OA_NO_HISTORY#></p>[#endif HISTORY#]
@@ -139,13 +149,14 @@
 (function(){
   var w=document.getElementById('oaWidget'),last=null,obj='[#CFG_OBJECT_NAME#]';
   function act(s){if(s&&s!=='No Alert')w.classList.add('active');else w.classList.remove('active');}
-  function upd(){['Status','Name','City','Instructions','LastAlarmTime','Img','History'].forEach(function(p){
+  function upd(){
+    ['Status','Name','City','Instructions','LastAlarmTime','Img','History','Distance'].forEach(function(p){
       fetch('/objects/?op=get&object='+obj+'&p='+p).then(function(r){return r.text();}).then(function(v){v=v.trim();
         if(p==='Status'){document.getElementById('oaStatus').textContent='Статус: '+v;act(v);}
         else if(p==='Name')document.getElementById('oaName').textContent=v;
         else if(p==='City')document.getElementById('oaCity').textContent=v;
         else if(p==='Instructions')document.getElementById('oaInstr').textContent=v;
-        else if(p==='LastAlarmTime')document.getElementById('oaTime').textContent='<#LANG_OA_LAST_ALARM#>: '+v;
+        else if(p==='LastAlarmTime')document.getElementById('oaTime').textContent='Последняя тревога (мои зоны): '+v;
         else if(p==='Img')document.getElementById('oaImg').src=v||'/img/modules/oref_alert.png';
         else if(p==='History')document.getElementById('oaHistory').textContent=v;
       });
@@ -153,7 +164,8 @@
   }
   function poll(){fetch('/objects/?op=get&object='+obj+'&p=Status').then(function(r){return r.text();}).then(function(v){v=v.trim();if(v!==last){last=v;upd();}});}
   act(document.getElementById('oaStatus')?document.getElementById('oaStatus').textContent.replace('Статус:','').trim():'');
-  setInterval(poll,3000);
+  setInterval(poll,2000);
+  setInterval(upd,30000);
 })();
 </script>
 [#endif TAB#]
@@ -161,7 +173,6 @@
 [#if TAB="settings"#]
 <div class="row">
 <div class="col-md-8">
-
 <form action="?" method="post" class="form-horizontal">
   <input type="hidden" name="view_mode" value="save_zones">
   <input type="hidden" name="tab" value="settings">
@@ -284,23 +295,19 @@
         <div class="checkbox"><label><input type="checkbox" name="notify_flag"     value="1" [#if CFG_NOTIFY="1"#]checked[#endif CFG_NOTIFY#]>        <#LANG_OA_NOTIFY_TG#></label></div>
         <div class="checkbox"><label><input type="checkbox" name="tts_flag"        value="1"[#if CFG_TTS="1"#]checked[#endif CFG_TTS#]>              <#LANG_OA_TTS#></label></div>
         <div class="checkbox"><label><input type="checkbox" name="auto_close_flag" value="1" [#if CFG_AUTO_CLOSE="1"#]checked[#endif CFG_AUTO_CLOSE#]> <#LANG_OA_AUTO_CLOSE#></label></div>
-        <div class="checkbox"><label><input type="checkbox" name="debug_log"       value="1" [#if CFG_DEBUG="1"#]checked[#endif CFG_DEBUG#]>           <#LANG_OA_DEBUG#></label></div>
+        <div class="checkbox"><label><input type="checkbox" name="debug_log"       value="1" [#if CFG_DEBUG_LOG="1"#]checked[#endif CFG_DEBUG_LOG#]>           <#LANG_OA_DEBUG#></label></div>
       </div>
     </div>
-    <!-- === 2. ПРАВКА: ИЗМЕНЕНЫ ЛИМИТЫ AUTO_CLOSE (10-20) === -->
     <div class="form-group">
       <label class="col-sm-4 control-label">Автоотбой через (мин)</label>
       <div class="col-sm-3">
         <input type="number" class="form-control" name="auto_close_time" value="[#CFG_AUTO_CLOSE_TIME#]" min="10" max="20">
-        <p class="help-block" style="font-size:11px">Диапазон: 10 - 20 минут</p>
       </div>
     </div>
-    <!-- === 3. ПРАВКА: ИЗМЕНЕНЫ ЛИМИТЫ ИСТОРИИ (2-24) === -->
     <div class="form-group">
       <label class="col-sm-4 control-label">Хранить историю (часов)</label>
       <div class="col-sm-3">
         <input type="number" class="form-control" name="hist_period" value="[#CFG_HIST_PERIOD#]" min="2" max="24">
-        <p class="help-block" style="font-size:11px">Диапазон: 2 - 24 часа</p>
       </div>
     </div>
     <div class="form-group">
@@ -308,9 +315,6 @@
     </div>
   </div>
 </form>
-
-<!-- === 1. ПРАВКА: БЛОК "ВСТРОЕННЫЕ ДАННЫЕ" БЫЛ СКРЫТ ОТСЮДА === -->
-
 </div>
 <div class="col-md-4">
   <div class="panel panel-default">
@@ -322,12 +326,13 @@
         <tr><td><code>.Category</code></td><td>1-14</td></tr>
         <tr><td><code>.Name</code></td><td>Название (рус.)</td></tr>
         <tr><td><code>.Instructions</code></td><td>Инструкция (рус.)</td></tr>
-        <tr><td><code>.Img</code></td><td>Иконка</td></tr>
+        <tr><td><code>.Img</code></td><td>Путь к иконке</td></tr>
         <tr><td><code>.City</code></td><td>Район (иврит)</td></tr>
         <tr><td><code>.CityRu</code></td><td>Район (рус.)</td></tr>
         <tr><td><code>.ZoneRu</code></td><td>Округ (рус.)</td></tr>
         <tr><td><code>.CityID</code></td><td>ID города</td></tr>
         <tr><td><code>.MapData</code></td><td>JSON полигон</td></tr>
+        <tr><td><code>.Distance</code></td><td>Дистанция (км)</td></tr>
         <tr><td><code>.ShelterTime</code></td><td>Сек до укрытия</td></tr>
         <tr><td><code>.History</code></td><td>История за час</td></tr>
         <tr><td><code>.Notify</code></td><td>0/1 флаг</td></tr>
@@ -337,18 +342,14 @@
       </table>
     </div>
   </div>
-
-  <!-- === 1. ПРАВКА: БЛОК ПЕРЕНЕСЕН СЮДА === -->
   <div class="panel panel-info" style="margin-top: 15px;">
     <div class="panel-heading"><b>🗂️ Встроенные данные</b></div>
     <div class="panel-body" style="font-size:11px; padding: 8px;">
-      <span class="label label-success">✅ Встроено</span> <code>cities.json</code> и <code>polygons.json</code> находятся в <code>modules/oref_alert/data/</code>.<br>Карта с полигонами открывается кнопкой «Открыть карту» на вкладке Статус.
+      <span class="label label-success">✅ Встроено</span> <code>cities.json</code> и <code>polygons.json</code> находятся в <code>modules/oref_alert/data/</code>.<br>Карта открывается из вкладки Статус.
     </div>
   </div>
-
 </div>
 </div>
-
 <script>
 (function(){
   var ta    = document.getElementById('oaFilterWords');
@@ -357,27 +358,18 @@
   var bdiv  = document.getElementById('oaBadges');
   var bempty= document.getElementById('oaBadgesEmpty');
   if(!ta) return;
-
   function get(){ return ta.value ? ta.value.split(',').map(function(s){return s.trim();}).filter(Boolean) :[]; }
   function set(arr){ ta.value = arr.join(', '); render(); }
-
   function render(){
     var arr = get();
-    if(!arr.length){
-      bdiv.innerHTML = '';
-      if(bempty){ bdiv.appendChild(bempty); bempty.style.display='inline'; }
-      return;
-    }
+    if(!arr.length){ bdiv.innerHTML = ''; if(bempty){ bdiv.appendChild(bempty); bempty.style.display='inline'; } return; }
     if(bempty) bempty.style.display='none';
     bdiv.innerHTML = arr.map(function(city){
       var esc  = city.replace(/&/g,'&amp;').replace(/</g,'&lt;');
       var escQ = city.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-      return '<span class="oa-badge">'+esc
-           + '<span class="oa-badge-x" onclick="oaRm(\''+escQ+'\')" title="Удалить">&#215;</span>'
-           + '</span>';
+      return '<span class="oa-badge">'+esc+'<span class="oa-badge-x" onclick="oaRm(\''+escQ+'\')" title="Удалить">&#215;</span></span>';
     }).join('');
   }
-
   window.oaRm = function(he){ set(get().filter(function(c){ return c!==he; })); };
   window.oaAdd = function(he){
     var arr = get();
@@ -385,21 +377,15 @@
     if(search) search.value = '';
     ac.style.display = 'none';
   };
-
   ta.addEventListener('input', function(){ render(); });
-
   window.oaShowAll = function(){
     var q = search ? (search.value || '\u05d0') : '\u05d0';
-    fetch('/cms/oref_cities.php?q='+encodeURIComponent(q))
-      .then(function(r){return r.json();}).then(showList);
+    fetch('/cms/oref_alert/oref_cities.php?q='+encodeURIComponent(q)).then(function(r){return r.json();}).then(showList);
   };
-
   function doSearch(q){
     if(!q||q.length<2){ ac.style.display='none'; return; }
-    fetch('/cms/oref_cities.php?q='+encodeURIComponent(q))
-      .then(function(r){return r.json();}).then(showList);
+    fetch('/cms/oref_alert/oref_cities.php?q='+encodeURIComponent(q)).then(function(r){return r.json();}).then(showList);
   }
-
   function showList(cs){
     if(!cs||!cs.length){ ac.style.display='none'; return; }
     var sel = get();
@@ -407,41 +393,30 @@
       var isSel = sel.indexOf(city.he) >= 0;
       var heEsc = city.he.replace(/&/g,'&amp;').replace(/'/g,'&#39;');
       return '<div class="oa-ac-item'+(isSel?' sel':'')+'" onclick="oaAdd(\''+heEsc.replace(/'/g,"\\'")+'\')">'+
-             '<b>'+(city.ru||city.he)+'</b>'+
-             (city.zone_ru?' <span style="color:#888;font-size:11px">&mdash; '+city.zone_ru+'</span>':'')+
-             (isSel?' <span style="color:#27ae60">&#10003;</span>':'')+
-             '<br><span class="oa-ac-he">'+city.he+'</span>'+
-             ' <span style="color:#888;font-size:11px">&#8987; '+city.countdown+' сек</span></div>';
+             '<b>'+(city.ru||city.he)+'</b>'+(city.zone_ru?' <span style="color:#888;font-size:11px">&mdash; '+city.zone_ru+'</span>':'')+(isSel?' <span style="color:#27ae60">&#10003;</span>':'')+'<br><span class="oa-ac-he">'+city.he+'</span> <span style="color:#888;font-size:11px">&#8987; '+city.countdown+' сек</span></div>';
     }).join('');
     ac.style.display = 'block';
   }
-
   if(search){
     var t;
     search.addEventListener('input',function(){clearTimeout(t);t=setTimeout(function(){doSearch(search.value);},250);});
     search.addEventListener('focus',function(){if(!search.value)oaShowAll();});
   }
-  document.addEventListener('click',function(e){
-    if(search&&!search.contains(e.target)&&!ac.contains(e.target))ac.style.display='none';
-  });
+  document.addEventListener('click',function(e){ if(search&&!search.contains(e.target)&&!ac.contains(e.target))ac.style.display='none'; });
   render();
 })();
-
 function oaGPS(){
   var el=document.getElementById('oaGpsRes');
   if(!navigator.geolocation){el.textContent='GPS недоступен';return;}
   el.textContent='📡 Определяем...';
   navigator.geolocation.getCurrentPosition(function(pos){
     var lat=pos.coords.latitude.toFixed(6),lng=pos.coords.longitude.toFixed(6);
-    document.getElementById('oaLat').value=lat;
-    document.getElementById('oaLng').value=lng;
-    fetch('/cms/oref_cities.php?op=gps&lat='+lat+'&lng='+lng)
-      .then(function(r){return r.json();})
-      .then(function(d){el.style.color=d.error?'orange':'green';el.textContent=d.error?'⚠️ Вне зон':'✅ '+d.he+' ('+d.countdown+' сек)';});
+    document.getElementById('oaLat').value=lat; document.getElementById('oaLng').value=lng;
+    fetch('/cms/oref_alert/oref_cities.php?op=gps&lat='+lat+'&lng='+lng).then(function(r){return r.json();}).then(function(d){el.style.color=d.error?'orange':'green';el.textContent=d.error?'⚠️ Вне зон':'✅ '+d.he+' ('+d.countdown+' сек)';});
   },function(e){el.textContent='❌ '+e.message;});
 }
-</script>[#endif TAB#]
-
+</script>
+[#endif TAB#]
 
 [#if TAB="categories"#]
 <p class="text-muted" style="font-size:12px;margin-bottom:12px"><#LANG_OA_CAT_HINT#></p>
@@ -455,20 +430,20 @@ function oaGPS(){
   <div style="display:grid;grid-template-columns:40px 1fr 1fr 2fr;gap:6px;padding:6px 8px;border-bottom:1px solid #dee2e6;align-items:center">
     <div><strong style="color:#495057">[#ID#]</strong></div>
     <div><input type="text" class="form-control input-sm" name="cat_name_[#ID#]"  value="[#NAME#]"></div>
-    <div><input type="text" class="form-control input-sm" name="cat_img_[#ID#]"   value="[#IMG#]"  placeholder="/cms/icons/..."></div>
-    <div><input type="text" class="form-control input-sm" name="cat_instr_[#ID#]" value="[#INSTR#]"></div>
+    <div><input type="text" class="form-control input-sm" name="cat_img_[#ID#]"   value="[#IMG#]"  placeholder="/modules/oref_alert/icons/..."></div>
+	<div><input type="text" class="form-control input-sm" name="cat_instr_[#ID#]" value="[#INSTR#]"></div>
   </div>[#end CATEGORIES#]
   <div style="margin-top:12px"><button type="submit" class="btn btn-success">💾 <#LANG_OA_SAVE#></button></div>
-</form>[#endif TAB#]
-
+</form>
+[#endif TAB#]
 
 [#if TAB="code"#]
 <div class="panel panel-warning" style="margin-bottom:12px">
   <div class="panel-heading"><b>📺 <#LANG_OA_WATCHER_TITLE#></b></div>
   <div class="panel-body" style="font-size:12px">
-    <p><b>Вариант 1 — Настенный терминал:</b> открыть в браузере на весь экран:<br><code>http://[ip]/cms/oref_map.php</code></p>
+    <p><b>Вариант 1 — Настенный терминал:</b> открыть в браузере:<br><code>http://[ip]/cms/oref_alert/oref_map.php</code></p>
     <hr style="margin:6px 0">
-    <p><b>Вариант 2 — Автооткрытие окна с любой страницы:</b><br><code>&lt;script src="/templates/oref_alert/alert_watcher.js"&gt;&lt;/script&gt;</code></p>
+    <p><b>Вариант 2 — Автооткрытие окна:</b><br><code>&lt;script src="/templates/oref_alert/alert_watcher.js"&gt;&lt;/script&gt;</code></p>
   </div>
 </div>
 <div class="alert alert-info" style="font-size:12px"><#LANG_OA_CODE_HINT#></div>
@@ -478,24 +453,25 @@ function oaGPS(){
   <input type="hidden" name="mode" value="update">
   <div class="oa-card">
     <h5 style="margin-top:0;color:#c0392b">🔴 <#LANG_OA_CODE_ALERT#></h5>
-    <textarea class="oa-code" name="code_alert" placeholder="// getURLBackground('http://192.168.1.57/control?cmd=event,warning');">[#CODE_ALERT#]</textarea>
+    <textarea class="oa-code" name="code_alert" placeholder="// getURLBackground('...');">[#CODE_ALERT#]</textarea>
   </div>
   <div class="oa-card">
     <h5 style="margin-top:0;color:#856404">⚡ <#LANG_OA_CODE_PRE#></h5>
-    <textarea class="oa-code" name="code_pre_alert" placeholder="// setGlobal('WarnLamp.blink', 1);">[#CODE_PRE_ALERT#]</textarea>
+    <textarea class="oa-code" name="code_pre_alert" placeholder="...">[#CODE_PRE_ALERT#]</textarea>
   </div>
   <div class="oa-card">
     <h5 style="margin-top:0;color:#155724">✅ <#LANG_OA_CODE_CLEAR#></h5>
-    <textarea class="oa-code" name="code_clear" placeholder="// setGlobal('WarnLamp.blink', 0);">[#CODE_CLEAR#]</textarea>
+    <textarea class="oa-code" name="code_clear" placeholder="...">[#CODE_CLEAR#]</textarea>
   </div>
   <div class="oa-card">
     <h5 style="margin-top:0;color:#495057">🔔 <#LANG_OA_CODE_DRILL#></h5>
-    <textarea class="oa-code" name="code_drill" placeholder="// DebMes('Учения кат.' . $histCat, 'oref_alert');">[#CODE_DRILL#]</textarea>
+    <textarea class="oa-code" name="code_drill" placeholder="...">[#CODE_DRILL#]</textarea>
   </div>
   <button type="submit" class="btn btn-success">💾 <#LANG_OA_SAVE#></button>
-</form>[#endif TAB#]
+</form>
+[#endif TAB#]
 
-<!-- === 4. ПРАВКА: ВКЛАДКА СПРАВКА === -->[#if TAB="help"#]
+[#if TAB="help"#]
 <div class="row">
   <div class="col-md-10">
     <div class="oa-card">
@@ -506,8 +482,8 @@ function oaGPS(){
       <ul style="font-size:13px;">
         <li>Цикл <code>cycle_oref_alert.php</code> постоянно опрашивает официальное API.</li>
         <li>Если список городов пуст, мониторится <b>вся страна</b>.</li>
-        <li>Дополнительно раз в минуту опрашивается <b>API Истории</b> для защиты от пропусков (например, при кратковременном обрыве связи).</li>
-        <li>В случае тревоги срабатывает метод <code>Trigger</code> объекта <code>Alert</code>, а также выполняется ваш пользовательский код.</li>
+        <li>Дополнительно, периодически (по умолчанию раз в 5 мин) опрашивается <b>API Истории</b> для защиты от пропусков (например, при кратковременном обрыве связи).</li>
+        <li>В случае тревоги срабатывает метод <code>Trigger</code> объекта <code>Alarm</code>, а также выполняется ваш пользовательский код.</li>
       </ul>
 
       <h5>💻 Интеграция в интерфейс (Виджеты):</h5>
@@ -516,17 +492,17 @@ function oaGPS(){
 
       <h5>🗺️ Полноэкранная карта (Для планшета):</h5>
       <p>Вы можете открыть интерактивную карту на весь экран (удобно для настенных панелей). Карта автоматически всплывает при тревоге и показывает полигон обстрела.</p>
-      <p><b>Ссылка:</b> <code>http://[IP_ВАШЕГО_СЕРВЕРА]/cms/oref_map.php</code></p>
+      <p><b>Ссылка:</b> <code>http://[IP_ВАШЕГО_СЕРВЕРА]/cms/oref_alert/oref_map.php</code></p>
       <p>Для автоматического всплытия карты на других страницах добавьте скрипт:<br>
       <code>&lt;script src="/templates/oref_alert/alert_watcher.js"&gt;&lt;/script&gt;</code></p>
 
       <h5>🎛️ Объектная модель:</h5>
-      <p>Модуль заполняет свойства объекта (по умолчанию <code>Alert</code>).<br>
+      <p>Модуль заполняет свойства объекта (по умолчанию <code>Alarm</code>).<br>
       Главные свойства:
       <ul style="font-size:13px;">
-        <li><code>Alert.Status</code> — <i>Alert</i> (Тревога) или <i>No Alert</i> (Тишина)</li>
-        <li><code>Alert.Category</code> — Номер категории (1 - Ракеты, 2 - БПЛА и т.д.)</li>
-        <li><code>Alert.City</code> — Список пострадавших зон на иврите.</li>
+        <li><code>Alarm.Status</code> — <i>Alert</i> (Тревога) или <i>No Alert</i> (Тишина)</li>
+        <li><code>Alarm.Category</code> — Номер категории (1 - Ракеты, 2 - БПЛА и т.д.)</li>
+        <li><code>Alarm.City</code> — Список пострадавших зон на иврите.</li>
       </ul>
       </p>
     </div>

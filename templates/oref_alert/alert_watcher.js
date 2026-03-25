@@ -9,7 +9,7 @@
  * При отбое — закрывает окно.
  */
 (function() {
-  var OBJ        = 'Alert';
+  var OBJ        = 'Alarm';
   var MAP_URL    = '/cms/oref_map.php';
   var POLL_MS    = 2500;
   var WIN_NAME   = 'OrefAlertMap';

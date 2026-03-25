@@ -42,7 +42,7 @@
 
   <div class="oa-u-top">
     <div class="oa-u-icon">
-      <img src="[#OBJ_IMG#]" alt="" onerror="this.src='/cms/icons/default.png'">
+      <img src="[#OBJ_IMG#]" alt="" onerror="this.src='/modules/oref_alert/icons/default.png'">
     </div>
     <div class="oa-u-text">
       <div class="oa-u-status">Статус: [#OBJ_STATUS#]</div>
@@ -52,7 +52,7 @@
   </div>
 
   <div class="oa-u-bottom">
-    <div class="oa-u-hist-label">▸ История за час</div>
+    <div class="oa-u-hist-label">▸ История (страна за час)</div>
     <div class="oa-u-track"><div class="oa-u-marquee" id="oaUHistory">[#OBJ_HISTORY#]</div></div>
     <div class="oa-u-instr">[#OBJ_INSTRUCTIONS#]</div>
     <div class="oa-u-time">Последняя тревога: [#OBJ_LAST_ALARM#]</div>
@@ -72,14 +72,15 @@
         case 'Name':   w.querySelector('.oa-u-name').textContent=r.v; break;
         case 'City':   w.querySelector('.oa-u-city').textContent=r.v; break;
         case 'Instructions': w.querySelector('.oa-u-instr').textContent=r.v; break;
-        case 'LastAlarmTime': w.querySelector('.oa-u-time').textContent='Последняя тревога: '+r.v; break;
-        case 'Img': var i=w.querySelector('.oa-u-icon img'); if(i)i.src=r.v||'/cms/icons/default.png'; break;
+        case 'LastAlarmTime': w.querySelector('.oa-u-time').textContent='Последняя тревога (мои зоны): '+r.v; break;
+        case 'Img': var i=w.querySelector('.oa-u-icon img'); if(i)i.src=r.v||'/modules/oref_alert/icons/default.png'; break;
         case 'History': var h=document.getElementById('oaUHistory'); if(h)h.textContent=r.v; break;
       }
     });});
   }
   function poll(){fetch('/objects/?op=get&object='+obj+'&p=Status').then(function(r){return r.text();}).then(function(v){v=v.trim();if(v!==last){last=v;update();}});}
   applyActive(w.querySelector('.oa-u-status')?w.querySelector('.oa-u-status').textContent.replace('Статус:','').trim():'');
-  setInterval(poll,3000);
+  update();
+  setInterval(poll,2000);
 })();
 </script>
