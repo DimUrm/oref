@@ -1,0 +1,246 @@
+<!-- Библиотеки Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+    body, html { margin: 0; padding: 0; background: #000; overflow: hidden; }
+
+    /* ЭКРАН ОЖИДАНИЯ (ЧАСЫ) ДЛЯ ПРЕДОТВРАЩЕНИЯ ВЫГОРАНИЯ */
+    #idle-screen {
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: #000; z-index: 5000; display: none;
+    }
+    #clock-container {
+        position: absolute; transition: all 2s ease-in-out;
+        color: #444; font-family: 'Courier New', monospace; text-align: center;
+    }
+    #clock-time { font-size: 80px; font-weight: bold; line-height: 1; }
+    #clock-date { font-size: 24px; margin-top: 10px; }
+
+    /* ЭКРАН РАЗБЛОКИРОВКИ */
+    #ra-unlocker {
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: #111; color: white; z-index: 10001;
+        display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: sans-serif;
+    }
+    #ra-start-btn {
+        padding: 20px 40px; font-size: 22px; background: #444; border: none;
+        color: white; border-radius: 8px; cursor: not-allowed; transition: 0.3s;
+    }
+    #ra-start-btn.ready { background: #cc0000; cursor: pointer; box-shadow: 0 0 20px rgba(204,0,0,0.6); }
+
+    /* КОНТЕЙНЕР ТРЕВОГИ */
+    #red-alert-container { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; font-family: Arial, sans-serif; }
+    #ra-header { 
+        position: absolute; top: 20px; right: 20px; 
+        background: #d32f2f; color: white; padding: 15px 30px; border-radius: 12px; 
+        text-align: right; z-index: 10000; min-width: 300px; max-width: 450px;
+        box-shadow: -5px 5px 20px rgba(0,0,0,0.5);
+    }
+    #ra-map { width: 100%; height: 100%; background: #000; }
+    .ra-title { font-size: 28px; font-weight: bold; margin-bottom: 5px; }
+    .ra-cities { font-size: 20px; font-weight: bold; color: #fff9c4; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 10px; }
+</style>
+
+<div id="ra-unlocker">
+    <div id="ra-status-text" style="margin-bottom:20px; font-size: 18px;">Загрузка данных...</div>
+    <button id="ra-start-btn" onclick="activateSystem()" disabled>ПОДОЖДИТЕ...</button>
+</div>
+
+<!-- Экран с динамическими часами -->
+<div id="idle-screen">
+    <div id="clock-container">
+        <div id="clock-time">00:00</div>
+        <div id="clock-date">Загрузка даты...</div>
+    </div>
+</div>
+
+<audio id="ra-audio" preload="auto">
+    <source src="http://192.168.1.188/cms/sounds/chpok.mp3" type="audio/mpeg">
+</audio>
+
+<div id="red-alert-container">
+    <div id="ra-header">
+        <div class="ra-title" id="ra-ru-title">&#128680; ВНИМАНИЕ &#128680;</div>
+        <div id="ra-ru-desc" style="font-size: 14px; opacity: 0.9; margin-bottom: 5px;"></div>
+        <div class="ra-cities" id="ra-txt-cities"></div>
+    </div>
+    <div id="ra-map"></div>
+</div>
+
+<script>
+let raMap, raPolygonsLayer;
+let polygonsData = {}; 
+let cityToIdMap = {}; 
+let activeAlertId = null;
+let autoCloseTimer = null;
+let playIteration = 0;
+const MAX_PLAYS = 3;
+
+const dictRu = {
+    "ירי רקטות וטילים": "Ракетный обстрел",
+    "חדירת כלי טיס עוין": "Вражеский дрон",
+    "רעידת אדמה": "Землетрясение",
+    "חדירת מחבלים": "Проникновение террористов",
+    "היכנסו למרחב המוגן": "Войдите в убежище!"
+};
+
+function norm(str) {
+    if (!str) return "";
+    return str.toString().replace(/[^\u0590-\u05FF]/g, "").trim();
+}
+
+// ДИНАМИЧЕСКИЕ ЧАСЫ (Burn-in protection)
+function startClock() {
+    const clockContainer = document.getElementById('clock-container');
+    const timeEl = document.getElementById('clock-time');
+    const dateEl = document.getElementById('clock-date');
+
+    function updateTime() {
+        const now = new Date();
+        timeEl.innerText = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        dateEl.innerText = now.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
+    }
+
+    function moveClock() {
+        if (activeAlertId) return; // Не двигать, если карта открыта
+        // Случайное положение в пределах 10-70% экрана
+        const randomTop = Math.floor(Math.random() * 60) + 15;
+        const randomLeft = Math.floor(Math.random() * 60) + 15;
+        clockContainer.style.top = randomTop + '%';
+        clockContainer.style.left = randomLeft + '%';
+    }
+
+    setInterval(updateTime, 1000);
+    setInterval(moveClock, 30000); // Сдвиг позиции каждые 30 секунд
+    updateTime();
+    moveClock();
+}
+
+async function preloadData() {
+    try {
+        const [resCities, resPoly] = await Promise.all([
+            fetch('https://raw.githubusercontent.com/eladnava/redalert-android/refs/heads/master/app/src/main/res/raw/cities.json'),
+            fetch('https://raw.githubusercontent.com/eladnava/redalert-android/refs/heads/master/app/src/main/res/raw/polygons.json')
+        ]);
+        const citiesArr = await resCities.json();
+        polygonsData = await resPoly.json();
+        citiesArr.forEach(c => { if (c && c.name) cityToIdMap[norm(c.name)] = c.id; });
+
+        document.getElementById('ra-status-text').innerText = "База готова";
+        const btn = document.getElementById('ra-start-btn');
+        btn.innerText = "ЗАПУСТИТЬ МОНИТОРИНГ";
+        btn.classList.add('ready');
+        btn.disabled = false;
+    } catch (e) { console.error(e); }
+}
+
+function activateSystem() {
+    const audio = document.getElementById('ra-audio');
+    audio.play().then(() => { 
+        audio.pause(); 
+        audio.currentTime = 0; 
+        document.getElementById('ra-unlocker').style.display = 'none';
+        document.getElementById('idle-screen').style.display = 'block'; // Показываем часы
+        initMap();
+        startClock();
+        startPolling();
+    });
+}
+
+function initMap() {
+    if (raMap) return;
+    raMap = L.map('ra-map', { zoomControl: false, attributionControl: false }).setView([31.5, 34.8], 7);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(raMap);
+    raPolygonsLayer = L.featureGroup().addTo(raMap);
+}
+
+function playSiren() {
+    const audio = document.getElementById('ra-audio');
+    playIteration = 0;
+    audio.onended = function() {
+        playIteration++;
+        if (playIteration < MAX_PLAYS && activeAlertId !== null) {
+            audio.currentTime = 0;
+            audio.play();
+        } else { audio.onended = null; }
+    };
+    audio.currentTime = 0;
+    audio.play();
+}
+
+function fixCoords(coords) {
+    if (typeof coords[0] === 'number') return (coords[0] > 33.5) ? [coords[1], coords[0]] : [coords[0], coords[1]];
+    return coords.map(fixCoords);
+}
+
+function triggerAlert(id, cities, hebTitle, hebDesc) {
+    if (autoCloseTimer) clearTimeout(autoCloseTimer);
+    activeAlertId = id;
+
+    // Скрываем часы, показываем карту
+    document.getElementById('idle-screen').style.display = 'none';
+    document.getElementById('red-alert-container').style.display = 'block';
+
+    playSiren();
+
+    let ruTitle = "ТРЕВОГА";
+    const cleanHebTitle = norm(hebTitle);
+    for (let key in dictRu) { if (norm(key) === cleanHebTitle) { ruTitle = dictRu[key]; break; } }
+
+    document.getElementById('ra-ru-title').innerText = "🚨 " + ruTitle;
+    document.getElementById('ra-ru-desc').innerText = dictRu[norm(hebDesc)] || "";
+    document.getElementById('ra-txt-cities').innerText = cities.join(', ');
+
+    raPolygonsLayer.clearLayers();
+    let foundAny = false;
+    cities.forEach(cityName => {
+        const cityId = cityToIdMap[norm(cityName)];
+        if (cityId && polygonsData[cityId.toString()]) {
+            L.polygon(fixCoords(polygonsData[cityId.toString()]), {
+                color: 'red', fillColor: 'red', weight: 3, fillOpacity: 0.6 // БЕЗ ПУЛЬСАЦИИ
+            }).addTo(raPolygonsLayer);
+            foundAny = true;
+        }
+    });
+
+    setTimeout(() => {
+        raMap.invalidateSize();
+        if (foundAny) raMap.fitBounds(raPolygonsLayer.getBounds(), { padding: [50, 50], maxZoom: 12 });
+    }, 500);
+
+    autoCloseTimer = setTimeout(stopAlert, 120000);
+
+    if (!id.toString().startsWith('test')) {
+        fetch(`/objects/?object=RedAlert&op=m&m=AlarmTrigger&cities=${encodeURIComponent(cities.join(', '))}`).catch(()=>{});
+    }
+}
+
+function stopAlert() {
+    document.getElementById('red-alert-container').style.display = 'none';
+    document.getElementById('idle-screen').style.display = 'block'; // Возвращаем часы
+    const audio = document.getElementById('ra-audio');
+    audio.pause();
+    audio.onended = null;
+    activeAlertId = null;
+    if(raPolygonsLayer) raPolygonsLayer.clearLayers();
+}
+
+function startPolling() {
+    setInterval(() => {
+        fetch('/alarmalarm.php?action=live')
+            .then(r => r.json())
+            .then(data => {
+                if (data && data.id && data.id !== activeAlertId) {
+                    triggerAlert(data.id, data.data, data.title, data.desc);
+                }
+            }).catch(()=>{});
+    }, 2000);
+}
+
+window.testAlert = () => {
+    triggerAlert('test' + Date.now(), ['תל אביב - יפו', 'באר שבע', 'אשדוד'], 'ירי רקטות וטילים', 'היכנסו למרחב המוגן');
+};
+
+preloadData();
+</script>
